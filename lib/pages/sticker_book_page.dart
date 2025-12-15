@@ -12,6 +12,20 @@ class _StickerBookPageState extends State<StickerBookPage> {
   int _selectedCategoryIndex = 0;
 
   final List<String> _stickers = List.filled(12, 'assets/icons/home_icon.png');
+  final PageController _pageController = PageController();
+
+  final List<List<Color>> _boardGradients = const [
+    [Color(0xFFD888FF), Color(0xFFF9C4E6)],
+    [Color(0xFFB2E0FF), Color(0xFFFBD3FF)],
+    [Color(0xFFFFE5B5), Color(0xFFF8C4E1)],
+    [Color(0xFFBFE3D0), Color(0xFFD8C8FF)],
+  ];
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +33,10 @@ class _StickerBookPageState extends State<StickerBookPage> {
       children: [
         Column(
           children: [
-            _StickerBoardPlaceholder(),
+            _StickerBookPager(
+              controller: _pageController,
+              gradients: _boardGradients,
+            ),
             const SizedBox(height: 12),
             const Spacer(),
           ],
@@ -37,33 +54,95 @@ class _StickerBookPageState extends State<StickerBookPage> {
   }
 }
 
-class _StickerBoardPlaceholder extends StatelessWidget {
+class _StickerBookPager extends StatelessWidget {
+  const _StickerBookPager({required this.controller, required this.gradients});
+
+  final PageController controller;
+  final List<List<Color>> gradients;
+
+  @override
+  Widget build(BuildContext context) {
+    const backgroundColor = Color(0xFFFFF8F0);
+    return SizedBox(
+      height: 480,
+      child: PageView.builder(
+        controller: controller,
+        itemCount: gradients.length,
+        physics: const BouncingScrollPhysics(),
+        itemBuilder: (context, index) {
+          return _StickerBoardPage(
+            gradient: gradients[index % gradients.length],
+            backgroundColor: backgroundColor,
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _StickerBoardPage extends StatelessWidget {
+  const _StickerBoardPage({
+    required this.gradient,
+    required this.backgroundColor,
+  });
+
+  final List<Color> gradient;
+  final Color backgroundColor;
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: 260,
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradient,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: const Center(
-        child: Text(
-          'シール帳',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-            color: Color(0xFF9CA3AF),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: SizedBox(
+                    width: 32,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: List.generate(
+                        6,
+                        (_) => Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: backgroundColor,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
