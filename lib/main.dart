@@ -44,7 +44,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     const StickerBookPage(),
     const Center(child: Text('みんなの', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('こうかん', style: TextStyle(fontSize: 24))),
+    const Center(child: Text('あつめる', style: TextStyle(fontSize: 24))),
     const Center(child: Text('せってい', style: TextStyle(fontSize: 24))),
   ];
 
@@ -55,10 +55,7 @@ class _MainScreenState extends State<MainScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            IndexedStack(
-              index: _selectedIndex,
-              children: _pages,
-            ),
+            IndexedStack(index: _selectedIndex, children: _pages),
             Positioned(
               left: 16,
               right: 16,

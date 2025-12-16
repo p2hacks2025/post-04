@@ -44,7 +44,7 @@ class CustomNavigationBar extends StatelessWidget {
           ),
           _NavItem(
             iconPath: 'assets/icons/exchange_icon.png',
-            label: 'こうかん',
+            label: 'あつめる',
             isSelected: selectedIndex == 2,
             onTap: () => onItemTapped(2),
           ),
