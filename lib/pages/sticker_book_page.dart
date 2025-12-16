@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:seal_app/sticker_book/models.dart';
+import 'package:seal_app/sticker_book/sticker_book_pager.dart';
+import 'package:seal_app/sticker_book/sticker_list_bottom_sheet.dart';
+
 class StickerBookPage extends StatefulWidget {
   const StickerBookPage({super.key});
 
@@ -11,7 +15,15 @@ class _StickerBookPageState extends State<StickerBookPage> {
   final List<String> _categories = const ['すべて', 'どうぶつ', 'のりもの', 'たべもの'];
   int _selectedCategoryIndex = 0;
 
-  final List<String> _stickers = List.filled(12, 'assets/icons/home_icon.png');
+  List<String?> _inventorySlots = [];
+
+  List<List<PlacedSticker>> _placedByPage = [];
+  String? _selectedStickerId;
+  String? _pendingStickerAsset;
+  int? _pendingSlotIndex;
+  List<GlobalKey> _boardKeys = [];
+  bool _pageScrollEnabled = true;
+
   final PageController _pageController = PageController();
 
   final List<List<Color>> _boardGradients = const [
@@ -22,6 +34,13 @@ class _StickerBookPageState extends State<StickerBookPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _inventorySlots = List<String?>.filled(20, 'assets/icons/home_icon.png');
+    _initializePageCollections();
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
@@ -29,369 +48,144 @@ class _StickerBookPageState extends State<StickerBookPage> {
 
   @override
   Widget build(BuildContext context) {
+    _initializePageCollections();
     return Stack(
       children: [
         Column(
           children: [
-            _StickerBookPager(
+            StickerBookPager(
               controller: _pageController,
               gradients: _boardGradients,
+              boardKeys: _boardKeys,
+              getPlaced: (page) => _placedByPage[page],
+              pageScrollEnabled: _pageScrollEnabled,
+              onInteractionToggle: (enabled) {
+                if (_pageScrollEnabled != enabled) {
+                  setState(() => _pageScrollEnabled = enabled);
+                }
+              },
+              selectedId: _selectedStickerId,
+              pendingStickerAsset: _pendingStickerAsset,
+              pendingSlotIndex: _pendingSlotIndex,
+              onPlace: (asset, slotIndex, pos, size, page) =>
+                  _placeSticker(asset, slotIndex, pos, size, page),
+              onSelect: _selectSticker,
+              onUpdate: (id, pos, rot, size, page) =>
+                  _updateSticker(id, pos, rot, size, page),
+              onRemove: (id, page) => _removeSticker(id, page),
             ),
             const SizedBox(height: 12),
             const Spacer(),
           ],
         ),
-        _StickerListBottomSheet(
+        StickerListBottomSheet(
           categories: _categories,
           selectedIndex: _selectedCategoryIndex,
           onCategorySelected: (index) {
             setState(() => _selectedCategoryIndex = index);
           },
-          stickers: _stickers,
+          inventorySlots: _inventorySlots,
+          onTapSticker: _handleStickerTap,
         ),
       ],
     );
   }
-}
 
-class _StickerBookPager extends StatelessWidget {
-  const _StickerBookPager({required this.controller, required this.gradients});
+  void _handleStickerTap(String asset, int slotIndex) {
+    if (slotIndex < 0 || slotIndex >= _inventorySlots.length) return;
+    if (_inventorySlots[slotIndex] != asset) return;
+    setState(() {
+      _pendingStickerAsset = asset;
+      _pendingSlotIndex = slotIndex;
+      _selectedStickerId = null;
+    });
+  }
 
-  final PageController controller;
-  final List<List<Color>> gradients;
+  void _placeSticker(
+    String asset,
+    int slotIndex,
+    Offset position,
+    Size boardSize, [
+    int page = 0,
+  ]) {
+    if (slotIndex < 0 || slotIndex >= _inventorySlots.length) return;
+    if (_inventorySlots[slotIndex] != asset) return;
+    const stickerSize = 72.0;
+    final clamped = Offset(
+      position.dx.clamp(stickerSize / 2, boardSize.width - stickerSize / 2),
+      position.dy.clamp(stickerSize / 2, boardSize.height - stickerSize / 2),
+    );
+    final sticker = PlacedSticker(
+      id: '${DateTime.now().microsecondsSinceEpoch}-$page',
+      asset: asset,
+      inventoryIndex: slotIndex,
+      position: clamped,
+      rotation: 0,
+      size: const Size(stickerSize, stickerSize),
+    );
+    setState(() {
+      _inventorySlots[slotIndex] = null;
+      _placedByPage[page].add(sticker);
+      _pendingStickerAsset = null;
+      _pendingSlotIndex = null;
+      _selectedStickerId = sticker.id;
+    });
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    const backgroundColor = Color(0xFFFFF8F0);
-    return SizedBox(
-      height: 480,
-      child: PageView.builder(
-        controller: controller,
-        itemCount: gradients.length,
-        physics: const BouncingScrollPhysics(),
-        itemBuilder: (context, index) {
-          return _StickerBoardPage(
-            gradient: gradients[index % gradients.length],
-            backgroundColor: backgroundColor,
+  void _updateSticker(
+    String id,
+    Offset position,
+    double rotation,
+    Size boardSize,
+    int page,
+  ) {
+    const stickerSize = 72.0;
+    setState(() {
+      for (var i = 0; i < _placedByPage[page].length; i++) {
+        if (_placedByPage[page][i].id == id) {
+          final clamped = Offset(
+            position.dx.clamp(stickerSize / 2, boardSize.width - stickerSize / 2),
+            position.dy.clamp(stickerSize / 2, boardSize.height - stickerSize / 2),
           );
-        },
-      ),
-    );
+          _placedByPage[page][i] = _placedByPage[page][i].copyWith(
+            position: clamped,
+            rotation: rotation,
+          );
+          break;
+        }
+      }
+    });
   }
-}
 
-class _StickerBoardPage extends StatelessWidget {
-  const _StickerBoardPage({
-    required this.gradient,
-    required this.backgroundColor,
-  });
-
-  final List<Color> gradient;
-  final Color backgroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradient,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 12),
-                  child: SizedBox(
-                    width: 32,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: List.generate(
-                        6,
-                        (_) => Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: backgroundColor,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
-                                blurRadius: 4,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  void _selectSticker(String id) {
+    setState(() {
+      _selectedStickerId = id.isEmpty ? null : id;
+      _pendingStickerAsset = null;
+      _pendingSlotIndex = null;
+    });
   }
-}
 
-class _StickerListBottomSheet extends StatelessWidget {
-  const _StickerListBottomSheet({
-    required this.categories,
-    required this.selectedIndex,
-    required this.onCategorySelected,
-    required this.stickers,
-  });
-
-  final List<String> categories;
-  final int selectedIndex;
-  final ValueChanged<int> onCategorySelected;
-  final List<String> stickers;
-
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.45,
-      minChildSize: 0.35,
-      maxChildSize: 0.85,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          padding: const EdgeInsets.fromLTRB(0, 10, 0, 12),
-          child: Column(
-            children: [
-              _StickerTabs(
-                categories: categories,
-                selectedIndex: selectedIndex,
-                onCategorySelected: onCategorySelected,
-              ),
-              const SizedBox(height: 6),
-              Expanded(
-                child: _StickerGridArea(
-                  stickers: stickers,
-                  scrollController: scrollController,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
+  void _removeSticker(String id, int page) {
+    setState(() {
+      final sticker = _placedByPage[page].firstWhere((s) => s.id == id);
+      _placedByPage[page].removeWhere((s) => s.id == id);
+      if (sticker.inventoryIndex >= 0 &&
+          sticker.inventoryIndex < _inventorySlots.length) {
+        _inventorySlots[sticker.inventoryIndex] = sticker.asset;
+      }
+      if (_selectedStickerId == id) {
+        _selectedStickerId = null;
+      }
+    });
   }
-}
 
-class _StickerTabs extends StatelessWidget {
-  const _StickerTabs({
-    required this.categories,
-    required this.selectedIndex,
-    required this.onCategorySelected,
-  });
-
-  final List<String> categories;
-  final int selectedIndex;
-  final ValueChanged<int> onCategorySelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.transparent,
-      padding: const EdgeInsets.only(bottom: 6),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.only(left: 0, right: 0),
-        child: Transform.translate(
-          offset: const Offset(0, 0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              for (var i = 0; i < categories.length; i++)
-                _FileTab(
-                  label: categories[i],
-                  isSelected: selectedIndex == i,
-                  onTap: () => onCategorySelected(i),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StickerGridArea extends StatelessWidget {
-  const _StickerGridArea({
-    required this.stickers,
-    required this.scrollController,
-  });
-
-  final List<String> stickers;
-  final ScrollController scrollController;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      child: Stack(
-        clipBehavior: Clip.hardEdge,
-        children: [
-          const Positioned.fill(
-            child: Padding(
-              padding: EdgeInsets.only(right: 1),
-              child: _GridBackground(),
-            ),
-          ),
-          GridView.builder(
-            controller: scrollController,
-            physics: const ClampingScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-            ),
-            itemCount: stickers.length,
-            itemBuilder: (context, index) {
-              return _StickerTile(assetPath: stickers[index]);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FileTab extends StatelessWidget {
-  const _FileTab({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.translucent,
-      onVerticalDragStart: (_) => onTap(),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFFE8D9) : const Color(0xFFF1F5F9),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(12),
-            topRight: Radius.circular(12),
-          ),
-          border: Border(
-            top: BorderSide(
-              color: isSelected
-                  ? const Color(0xFFC6845A)
-                  : const Color(0xFFCBD5E1),
-              width: 2,
-            ),
-            left: BorderSide(
-              color: isSelected
-                  ? const Color(0xFFC6845A)
-                  : const Color(0xFFCBD5E1),
-              width: 2,
-            ),
-            right: BorderSide(
-              color: isSelected
-                  ? const Color(0xFFC6845A)
-                  : const Color(0xFFCBD5E1),
-              width: 2,
-            ),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected
-                ? const Color(0xFFC6845A)
-                : const Color(0xFF334155),
-            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StickerTile extends StatelessWidget {
-  const _StickerTile({required this.assetPath});
-
-  final String assetPath;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 6,
-            spreadRadius: 0,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(8),
-      child: Image.asset(assetPath, filterQuality: FilterQuality.high),
-    );
-  }
-}
-
-class _GridBackground extends StatelessWidget {
-  const _GridBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(painter: _GridBackgroundPainter());
-  }
-}
-
-class _GridBackgroundPainter extends CustomPainter {
-  const _GridBackgroundPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const double step = 24;
-    final paint = Paint()
-      ..color = const Color(0xFFD9DDE3)
-      ..strokeWidth = 1;
-
-    final double width = size.width;
-    final double height = size.height;
-
-    for (double x = 0; x <= width + step; x += step) {
-      canvas.drawLine(Offset(x, 0), Offset(x, height), paint);
+  void _initializePageCollections() {
+    final pageCount = _boardGradients.length;
+    if (_boardKeys.length != pageCount) {
+      _boardKeys = List.generate(pageCount, (_) => GlobalKey());
     }
-    for (double y = 0; y <= height + step; y += step) {
-      canvas.drawLine(Offset(0, y), Offset(width, y), paint);
+    if (_placedByPage.length != pageCount) {
+      _placedByPage = List.generate(pageCount, (_) => <PlacedSticker>[]);
     }
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

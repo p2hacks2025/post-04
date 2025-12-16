@@ -55,7 +55,10 @@ class _MainScreenState extends State<MainScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            _pages[_selectedIndex],
+            IndexedStack(
+              index: _selectedIndex,
+              children: _pages,
+            ),
             Positioned(
               left: 16,
               right: 16,
