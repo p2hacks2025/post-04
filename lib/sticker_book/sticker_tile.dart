@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class StickerTile extends StatelessWidget {
   const StickerTile({
+    super.key,
     required this.assetPath,
     this.size,
     this.showShadow = true,
@@ -16,7 +17,7 @@ class StickerTile extends StatelessWidget {
     final boxShadow = showShadow
         ? [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 6,
               spreadRadius: 0,
               offset: const Offset(0, 2),

@@ -6,6 +6,7 @@ import 'sticker_tile.dart';
 
 class PlacedStickerWidget extends StatelessWidget {
   const PlacedStickerWidget({
+    super.key,
     required this.sticker,
     required this.isSelected,
     required this.boardKey,
@@ -44,6 +45,7 @@ class PlacedStickerWidget extends StatelessWidget {
 
 class DraggableSticker extends StatefulWidget {
   const DraggableSticker({
+    super.key,
     required this.sticker,
     required this.isSelected,
     required this.boardKey,
@@ -195,7 +197,7 @@ class _ActionBadge extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),

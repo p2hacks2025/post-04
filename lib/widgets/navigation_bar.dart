@@ -127,7 +127,7 @@ class _NavItemState extends State<_NavItem>
   Widget build(BuildContext context) {
     final Color labelColor = widget.isSelected
         ? const Color(0xFFC6845A)
-        : const Color(0xFFC6845A).withOpacity(0.5);
+        : const Color(0xFFC6845A).withValues(alpha: 0.5);
 
     return GestureDetector(
       onTap: _handleTap,
