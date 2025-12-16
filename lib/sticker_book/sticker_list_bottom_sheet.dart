@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'models.dart';
 import 'sticker_tile.dart';
@@ -11,6 +12,7 @@ class StickerListBottomSheet extends StatelessWidget {
     required this.onCategorySelected,
     required this.inventorySlots,
     required this.onTapSticker,
+    required this.onDropSticker,
   });
 
   final List<String> categories;
@@ -18,6 +20,7 @@ class StickerListBottomSheet extends StatelessWidget {
   final ValueChanged<int> onCategorySelected;
   final List<String?> inventorySlots;
   final void Function(String asset, int slotIndex) onTapSticker;
+  final void Function(InventoryPayload payload, Offset globalPosition) onDropSticker;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +48,7 @@ class StickerListBottomSheet extends StatelessWidget {
                   scrollController: scrollController,
                   inventorySlots: inventorySlots,
                   onTapSticker: onTapSticker,
+                  onDropSticker: onDropSticker,
                 ),
               ),
             ],
@@ -95,11 +99,13 @@ class _StickerGridArea extends StatelessWidget {
     required this.scrollController,
     required this.inventorySlots,
     required this.onTapSticker,
+    required this.onDropSticker,
   });
 
   final ScrollController scrollController;
   final List<String?> inventorySlots;
   final void Function(String asset, int slotIndex) onTapSticker;
+  final void Function(InventoryPayload payload, Offset globalPosition) onDropSticker;
 
   @override
   Widget build(BuildContext context) {
@@ -130,6 +136,7 @@ class _StickerGridArea extends StatelessWidget {
               assetPath: asset,
               slotIndex: index,
               onTap: asset != null ? () => onTapSticker(asset, index) : null,
+              onDropSticker: onDropSticker,
             );
           },
         ),
@@ -138,42 +145,103 @@ class _StickerGridArea extends StatelessWidget {
   }
 }
 
-class _InventoryStickerTile extends StatelessWidget {
+class _InventoryStickerTile extends StatefulWidget {
   const _InventoryStickerTile({
     required this.assetPath,
     required this.slotIndex,
     required this.onTap,
+    required this.onDropSticker,
   });
 
   final String? assetPath;
   final int slotIndex;
   final VoidCallback? onTap;
+  final void Function(InventoryPayload payload, Offset globalPosition) onDropSticker;
+
+  @override
+  State<_InventoryStickerTile> createState() => _InventoryStickerTileState();
+}
+
+class _InventoryStickerTileState extends State<_InventoryStickerTile> {
+  OverlayEntry? _overlayEntry;
+  Offset _overlayPosition = Offset.zero;
+  bool _isDragging = false;
+
+  @override
+  void dispose() {
+    _removeOverlay();
+    super.dispose();
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+    _isDragging = false;
+  }
+
+  void _showOverlay(BuildContext context, String assetPath, Offset globalPosition) {
+    _overlayPosition = globalPosition;
+    _overlayEntry = OverlayEntry(
+      builder: (context) {
+        final isGlb = assetPath.toLowerCase().endsWith('.glb');
+        return Positioned(
+          left: _overlayPosition.dx - 30,
+          top: _overlayPosition.dy - 30,
+          child: Material(
+            color: Colors.transparent,
+            child: StickerTile(
+              assetPath: assetPath,
+              size: 60,
+              showShadow: false,
+              forceStaticImage: false,
+              useModelViewer: isGlb,
+            ),
+          ),
+        );
+      },
+    );
+    Overlay.of(context).insert(_overlayEntry!);
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (assetPath == null) {
+    if (widget.assetPath == null) {
       return const _EmptySlot();
     }
-    return LongPressDraggable<InventoryPayload>(
-      data: InventoryPayload(asset: assetPath!, slotIndex: slotIndex),
-      maxSimultaneousDrags: 1,
-      feedback: StickerTile(
-        assetPath: assetPath!,
-        size: 60,
-        showShadow: false,
-      ),
-      childWhenDragging: Opacity(
-        opacity: 0.5,
-        child: StickerTile(
-          assetPath: assetPath!,
-        ),
-      ),
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: StickerTile(
-          assetPath: assetPath!,
-        ),
+
+    final assetPath = widget.assetPath!;
+    final isGlb = assetPath.toLowerCase().endsWith('.glb');
+
+    final tile = StickerTile(
+      assetPath: assetPath,
+      forceStaticImage: false,
+      useModelViewer: isGlb,
+    );
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: widget.onTap,
+      onLongPressStart: (details) {
+        if (_isDragging) return;
+        HapticFeedback.lightImpact();
+        setState(() => _isDragging = true);
+        _showOverlay(context, assetPath, details.globalPosition);
+      },
+      onLongPressMoveUpdate: (details) {
+        if (_overlayEntry == null) return;
+        _overlayPosition = details.globalPosition;
+        _overlayEntry!.markNeedsBuild();
+      },
+      onLongPressEnd: (details) {
+        final payload = InventoryPayload(asset: assetPath, slotIndex: widget.slotIndex);
+        final dropPosition = details.globalPosition;
+        _removeOverlay();
+        setState(() {});
+        widget.onDropSticker(payload, dropPosition);
+      },
+      child: Opacity(
+        opacity: _isDragging ? 0.5 : 1,
+        child: tile,
       ),
     );
   }

@@ -15,6 +15,12 @@ class _StickerBookPageState extends State<StickerBookPage> {
   final List<String> _categories = const ['すべて', 'どうぶつ', 'のりもの', 'たべもの'];
   int _selectedCategoryIndex = 0;
 
+  final List<String> _glbAssets = const [
+    'assets/seals/hurt.glb',
+    'assets/seals/cat.glb',
+    'assets/seals/circle.glb',
+    'assets/seals/star.glb',
+  ];
   List<String?> _inventorySlots = [];
 
   List<List<PlacedSticker>> _placedByPage = [];
@@ -36,7 +42,10 @@ class _StickerBookPageState extends State<StickerBookPage> {
   @override
   void initState() {
     super.initState();
-    _inventorySlots = List<String?>.filled(20, 'assets/icons/home_icon.png');
+    _inventorySlots = List<String?>.generate(20, (index) {
+      if (index < _glbAssets.length) return _glbAssets[index];
+      return null;
+    });
     _initializePageCollections();
   }
 
@@ -86,6 +95,7 @@ class _StickerBookPageState extends State<StickerBookPage> {
           },
           inventorySlots: _inventorySlots,
           onTapSticker: _handleStickerTap,
+          onDropSticker: _handleDropFromList,
         ),
       ],
     );
@@ -99,6 +109,29 @@ class _StickerBookPageState extends State<StickerBookPage> {
       _pendingSlotIndex = slotIndex;
       _selectedStickerId = null;
     });
+  }
+
+  void _handleDropFromList(InventoryPayload payload, Offset globalPosition) {
+    final page = (_pageController.page ?? 0).round().clamp(
+      0,
+      _boardKeys.length - 1,
+    );
+    final boardKey = _boardKeys[page];
+    final renderBox = boardKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final topLeft = renderBox.localToGlobal(Offset.zero);
+    final rect = topLeft & renderBox.size;
+    if (!rect.contains(globalPosition)) return;
+
+    final local = renderBox.globalToLocal(globalPosition);
+    _placeSticker(
+      payload.asset,
+      payload.slotIndex,
+      local,
+      renderBox.size,
+      page,
+    );
   }
 
   void _placeSticker(
@@ -144,8 +177,14 @@ class _StickerBookPageState extends State<StickerBookPage> {
       for (var i = 0; i < _placedByPage[page].length; i++) {
         if (_placedByPage[page][i].id == id) {
           final clamped = Offset(
-            position.dx.clamp(stickerSize / 2, boardSize.width - stickerSize / 2),
-            position.dy.clamp(stickerSize / 2, boardSize.height - stickerSize / 2),
+            position.dx.clamp(
+              stickerSize / 2,
+              boardSize.width - stickerSize / 2,
+            ),
+            position.dy.clamp(
+              stickerSize / 2,
+              boardSize.height - stickerSize / 2,
+            ),
           );
           _placedByPage[page][i] = _placedByPage[page][i].copyWith(
             position: clamped,

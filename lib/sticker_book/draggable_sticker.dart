@@ -89,6 +89,7 @@ class _DraggableStickerState extends State<DraggableSticker> {
 
   @override
   Widget build(BuildContext context) {
+    final isGlb = widget.sticker.asset.toLowerCase().endsWith('.glb');
     return GestureDetector(
       onTap: () => widget.onSelect(widget.sticker.id),
       onTapDown: (_) => widget.onInteractionToggle(false),
@@ -128,6 +129,7 @@ class _DraggableStickerState extends State<DraggableSticker> {
             StickerTile(
               assetPath: widget.sticker.asset,
               size: widget.sticker.size.width,
+              useModelViewer: isGlb,
             ),
             if (widget.isSelected) ...[
               Positioned(
