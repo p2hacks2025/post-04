@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PlacedSticker {
   const PlacedSticker({
@@ -39,4 +40,41 @@ class InventoryPayload {
 
   final String asset;
   final int slotIndex;
+}
+
+// 1. Firebaseの「stickers」コレクションのデータを受け取る型
+class StickerMaster {
+  final String id;
+  final int orderIndex;   // 図鑑番号
+  final String name;
+  final String image;
+  final String category;
+
+  StickerMaster({
+    required this.id,
+    required this.orderIndex,
+    required this.name,
+    required this.image,
+    required this.category,
+  });
+
+  // Firestoreのドキュメントから変換する工場
+  factory StickerMaster.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return StickerMaster(
+      id: doc.id,
+      orderIndex: data['index'] ?? 999, // データがない場合は後ろへ
+      name: data['name'] ?? '',
+      image: data['image'] ?? '',
+      category: data['category'] ?? 'その他',
+    );
+  }
+}
+
+// 2. 画面表示用に「マスタ」と「持ってるか」をセットにした型（下駄箱の1マス）
+class StickerSlotData {
+  final StickerMaster? master; // そのマスに入るべきシール情報
+  final bool hasSticker;       // 持っているか？
+
+  StickerSlotData({this.master, this.hasSticker = false});
 }

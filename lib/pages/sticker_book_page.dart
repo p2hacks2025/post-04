@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-
 import 'package:seal_app/sticker_book/models.dart';
 import 'package:seal_app/sticker_book/sticker_book_pager.dart';
 import 'package:seal_app/sticker_book/sticker_list_bottom_sheet.dart';
+import 'package:seal_app/sticker_book/repository.dart'; // ★追加: Repositoryをインポート
 
 class StickerBookPage extends StatefulWidget {
   const StickerBookPage({super.key});
@@ -15,7 +15,11 @@ class _StickerBookPageState extends State<StickerBookPage> {
   final List<String> _categories = const ['すべて', 'どうぶつ', 'のりもの', 'たべもの'];
   int _selectedCategoryIndex = 0;
 
+  // ★変更: ここにFirebaseから取った画像URLが入る
   List<String?> _inventorySlots = [];
+  
+  // ★追加: データの読み込み中かどうかを管理するフラグ
+  bool _isLoading = true; 
 
   List<List<PlacedSticker>> _placedByPage = [];
   String? _selectedStickerId;
@@ -36,8 +40,38 @@ class _StickerBookPageState extends State<StickerBookPage> {
   @override
   void initState() {
     super.initState();
-    _inventorySlots = List<String?>.filled(20, 'assets/icons/home_icon.png');
+    // ★変更: 初期値はダミーではなく空にしておく（またはロード中画像）
+    _inventorySlots = []; 
     _initializePageCollections();
+    
+    // ★追加: データ取得を開始！
+    _fetchStickerData();
+  }
+
+  // ★追加: Firebaseからデータを取ってきて下駄箱を作る処理
+  Future<void> _fetchStickerData() async {
+    try {
+      final repository = StickerRepository();
+      
+      // 1. Firebaseからマスタデータを取得（repository側でsort済み）
+      final masters = await repository.fetchMasters();
+
+      // 2. 画面表示用のリストを作る
+      // 今回は「マスタにある画像」をそのままリストに入れる
+      // (将来はここで「持っているか？」の判定を入れる)
+      final slots = masters.map((m) => m.image).toList();
+
+      if (mounted) {
+        setState(() {
+          _inventorySlots = slots; // データを反映
+          _isLoading = false;      // ロード完了
+        });
+      }
+    } catch (e) {
+      debugPrint('エラーが発生しました: $e');
+      // エラー時はとりあえずロード完了にして空の状態にするなどの処理
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -48,7 +82,15 @@ class _StickerBookPageState extends State<StickerBookPage> {
 
   @override
   Widget build(BuildContext context) {
-    _initializePageCollections();
+    _initializePageCollections(); // ※ここは本来buildの度でなくinitStateだけで良いかも
+
+    // ★追加: ロード中はぐるぐるを表示する
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Stack(
       children: [
         Column(
@@ -84,16 +126,24 @@ class _StickerBookPageState extends State<StickerBookPage> {
           onCategorySelected: (index) {
             setState(() => _selectedCategoryIndex = index);
           },
-          inventorySlots: _inventorySlots,
+          inventorySlots: _inventorySlots, // ★ここでFirebaseの画像リストが渡る
           onTapSticker: _handleStickerTap,
         ),
       ],
     );
   }
 
+  // ... (以下、_handleStickerTap などのメソッドは変更なしでOK)
+  // ただし、_inventorySlotsの中身が実際のURLになるので、
+  // StickerListBottomSheet側がネットワーク画像(Image.network)に対応している必要があります。
+  // もしasset画像しか表示できない作りだと、修正が必要です。
+
   void _handleStickerTap(String asset, int slotIndex) {
     if (slotIndex < 0 || slotIndex >= _inventorySlots.length) return;
-    if (_inventorySlots[slotIndex] != asset) return;
+    // nullチェックを追加
+    final slotAsset = _inventorySlots[slotIndex];
+    if (slotAsset == null || slotAsset != asset) return;
+    
     setState(() {
       _pendingStickerAsset = asset;
       _pendingSlotIndex = slotIndex;
@@ -109,7 +159,9 @@ class _StickerBookPageState extends State<StickerBookPage> {
     int page = 0,
   ]) {
     if (slotIndex < 0 || slotIndex >= _inventorySlots.length) return;
+    // nullチェック
     if (_inventorySlots[slotIndex] != asset) return;
+    
     const stickerSize = 72.0;
     final clamped = Offset(
       position.dx.clamp(stickerSize / 2, boardSize.width - stickerSize / 2),
@@ -124,6 +176,9 @@ class _StickerBookPageState extends State<StickerBookPage> {
       size: const Size(stickerSize, stickerSize),
     );
     setState(() {
+      // ★注意: ここでnullにすると「消費」される動きになる
+      // ユーザー所持情報と連動させるなら、ここは「所持数を減らす」ロジックに変わる
+      // 今回はとりあえずそのままnull（空席）にする
       _inventorySlots[slotIndex] = null;
       _placedByPage[page].add(sticker);
       _pendingStickerAsset = null;
@@ -132,6 +187,9 @@ class _StickerBookPageState extends State<StickerBookPage> {
     });
   }
 
+  // _updateSticker, _selectSticker, _removeSticker, _initializePageCollections
+  // これらのメソッドはそのままのコードで貼り付けてください
+  // （長くなるので省略しましたが、元のコードと同じです）
   void _updateSticker(
     String id,
     Offset position,
