@@ -90,7 +90,7 @@ class _NameplateTabTextState extends State<NameplateTabText> {
             },
           ),
           const SizedBox(height: 24),
-          _SectionTitle('装飾'),
+          _SectionTitle('そうしょく'),
           const SizedBox(height: 12),
           _DecorationOptions(
             hasOutline: widget.data.hasOutline,
