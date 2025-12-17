@@ -77,7 +77,7 @@ class StickerBookPager extends StatelessWidget {
   }
 }
 
-class _StickerBoardPage extends StatelessWidget {
+class _StickerBoardPage extends StatefulWidget {
   const _StickerBoardPage({
     required this.gradient,
     required this.boardKey,
@@ -107,6 +107,13 @@ class _StickerBoardPage extends StatelessWidget {
   final ValueChanged<bool> onInteractionToggle;
 
   @override
+  State<_StickerBoardPage> createState() => _StickerBoardPageState();
+}
+
+class _StickerBoardPageState extends State<_StickerBoardPage> {
+  double _lastRotation = 0.0;
+
+  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -114,35 +121,68 @@ class _StickerBoardPage extends StatelessWidget {
         return DragTarget<InventoryPayload>(
           onAcceptWithDetails: (details) {
             final renderBox =
-                boardKey.currentContext?.findRenderObject() as RenderBox?;
+                widget.boardKey.currentContext?.findRenderObject() as RenderBox?;
             if (renderBox == null) return;
             final local = renderBox.globalToLocal(details.offset);
-            onPlace(details.data.asset, details.data.slotIndex, local, boardSize);
+            widget.onPlace(details.data.asset, details.data.slotIndex, local, boardSize);
           },
           builder: (context, candidateData, rejectedData) {
             return GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTapUp: (d) {
-                onInteractionToggle(true);
-                if (pendingStickerAsset != null && pendingSlotIndex != null) {
-                  onPlace(
-                    pendingStickerAsset!,
-                    pendingSlotIndex!,
+                widget.onInteractionToggle(true);
+                if (widget.pendingStickerAsset != null && widget.pendingSlotIndex != null) {
+                  widget.onPlace(
+                    widget.pendingStickerAsset!,
+                    widget.pendingSlotIndex!,
                     d.localPosition,
                     boardSize,
                   );
                 } else {
-                  onSelect('');
+                  widget.onSelect('');
                 }
               },
+              onScaleStart: (details) {
+                // 選択中のシールがある場合のみ回転操作を開始
+                if (widget.selectedId != null) {
+                  widget.onInteractionToggle(false);
+                  _lastRotation = 0.0;
+                }
+              },
+              onScaleUpdate: (details) {
+                // 選択中のシールがある場合のみ回転を適用
+                if (widget.selectedId != null) {
+                  try {
+                    final selectedSticker = widget.placed.firstWhere(
+                      (s) => s.id == widget.selectedId,
+                    );
+                    
+                    final rotationDelta = details.rotation - _lastRotation;
+                    _lastRotation = details.rotation;
+                    
+                    widget.onUpdate(
+                      selectedSticker.id,
+                      selectedSticker.position,
+                      selectedSticker.rotation + rotationDelta,
+                      boardSize,
+                    );
+                  } catch (e) {
+                    // 選択中のシールが見つからない場合は何もしない
+                  }
+                }
+              },
+              onScaleEnd: (_) {
+                widget.onInteractionToggle(true);
+                _lastRotation = 0.0;
+              },
               child: Container(
-                key: boardKey,
+                key: widget.boardKey,
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: gradient,
+                    colors: widget.gradient,
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -189,15 +229,15 @@ class _StickerBoardPage extends StatelessWidget {
                         ],
                       ),
                     ),
-                    for (final sticker in placed)
+                    for (final sticker in widget.placed)
                       PlacedStickerWidget(
                         sticker: sticker,
-                        isSelected: sticker.id == selectedId,
-                        boardKey: boardKey,
-                        onSelect: onSelect,
-                        onUpdate: onUpdate,
-                        onRemove: onRemove,
-                        onInteractionToggle: onInteractionToggle,
+                        isSelected: sticker.id == widget.selectedId,
+                        boardKey: widget.boardKey,
+                        onSelect: widget.onSelect,
+                        onUpdate: widget.onUpdate,
+                        onRemove: widget.onRemove,
+                        onInteractionToggle: widget.onInteractionToggle,
                       ),
                   ],
                 ),

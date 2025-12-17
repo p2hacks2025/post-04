@@ -68,3 +68,31 @@ class InventoryPayload {
   final String asset;
   final int slotIndex;
 }
+
+class SealMetadata {
+  const SealMetadata({
+    required this.assetPath,
+    required this.name,
+    required this.rarity,
+  });
+
+  final String assetPath;
+  final String name;
+  final int rarity; // 1-5
+
+  factory SealMetadata.fromJson(Map<String, dynamic> json) {
+    return SealMetadata(
+      assetPath: json['assetPath'] as String,
+      name: json['name'] as String,
+      rarity: json['rarity'] as int,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'assetPath': assetPath,
+      'name': name,
+      'rarity': rarity,
+    };
+  }
+}

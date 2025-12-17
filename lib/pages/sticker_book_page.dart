@@ -17,7 +17,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   int _selectedCategoryIndex = 0;
 
   final List<String> _glbAssets = const [
-    'assets/seals/hurt.glb',
+    'assets/seals/heart.glb',
     'assets/seals/cat.glb',
     'assets/seals/circle.glb',
     'assets/seals/star.glb',

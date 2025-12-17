@@ -107,11 +107,18 @@ class _DraggableStickerState extends State<DraggableSticker> {
         if (renderBox == null) return;
         final deltaPosition = details.focalPoint - _dragStartOffset;
         final newPos = widget.sticker.position + deltaPosition;
-        final rotationDelta = details.rotation - _lastRotation;
+        
+        // 選択中のみ回転を適用
+        double newRotation = _localRotation;
+        if (widget.isSelected) {
+          final rotationDelta = details.rotation - _lastRotation;
+          newRotation += rotationDelta;
+        }
+        
         _dragStartOffset = details.focalPoint;
         _lastRotation = details.rotation;
         setState(() {
-          _localRotation += rotationDelta;
+          _localRotation = newRotation;
         });
         widget.onUpdate(
           widget.sticker.id,
@@ -121,63 +128,36 @@ class _DraggableStickerState extends State<DraggableSticker> {
         );
       },
       onScaleEnd: (_) => widget.onInteractionToggle(true),
-      child: Transform.rotate(
-        angle: _localRotation,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            StickerTile(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Transform.rotate(
+            angle: _localRotation,
+            child: StickerTile(
               assetPath: widget.sticker.asset,
               size: widget.sticker.size.width,
               useModelViewer: isGlb,
             ),
-            if (widget.isSelected) ...[
-              Positioned(
-                top: -14,
-                right: -14,
-                child: GestureDetector(
-                  onTap: () => widget.onRemove(widget.sticker.id),
-                  behavior: HitTestBehavior.translucent,
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: _ActionBadge(
-                      color: Colors.redAccent,
-                      icon: Icons.close,
-                    ),
+          ),
+          if (widget.isSelected) ...[
+            // 削除ボタン（左上）
+            Positioned(
+              top: -28,
+              left: -28,
+              child: GestureDetector(
+                onTap: () => widget.onRemove(widget.sticker.id),
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: _ActionBadge(
+                    color: Colors.redAccent,
+                    icon: Icons.close,
                   ),
                 ),
               ),
-              Positioned(
-                bottom: -22,
-                right: -22,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onPanUpdate: (details) {
-                    setState(() {
-                      _localRotation += details.delta.dx * 0.02;
-                    });
-                    final renderBox = widget.boardKey.currentContext
-                        ?.findRenderObject() as RenderBox?;
-                    if (renderBox == null) return;
-                    widget.onUpdate(
-                      widget.sticker.id,
-                      widget.sticker.position,
-                      _localRotation,
-                      renderBox.size,
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: _ActionBadge(
-                      color: Colors.orangeAccent,
-                      icon: Icons.rotate_right,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -213,3 +193,4 @@ class _ActionBadge extends StatelessWidget {
     );
   }
 }
+

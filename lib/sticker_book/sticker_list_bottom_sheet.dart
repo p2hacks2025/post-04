@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'models.dart';
+import 'seal_detail_overlay.dart';
 import 'sticker_tile.dart';
 
 class StickerListBottomSheet extends StatelessWidget {
@@ -48,6 +49,16 @@ class StickerListBottomSheet extends StatelessWidget {
                   scrollController: scrollController,
                   inventorySlots: inventorySlots,
                   onTapSticker: onTapSticker,
+                  onShowDetail: (assetPath) {
+                    showDialog(
+                      context: context,
+                      barrierDismissible: true,
+                      builder: (context) => SealDetailOverlay(
+                        assetPath: assetPath,
+                        onClose: () => Navigator.of(context).pop(),
+                      ),
+                    );
+                  },
                   onDropSticker: onDropSticker,
                 ),
               ),
@@ -99,12 +110,14 @@ class _StickerGridArea extends StatelessWidget {
     required this.scrollController,
     required this.inventorySlots,
     required this.onTapSticker,
+    required this.onShowDetail,
     required this.onDropSticker,
   });
 
   final ScrollController scrollController;
   final List<String?> inventorySlots;
   final void Function(String asset, int slotIndex) onTapSticker;
+  final void Function(String assetPath) onShowDetail;
   final void Function(InventoryPayload payload, Offset globalPosition) onDropSticker;
 
   @override
@@ -135,7 +148,7 @@ class _StickerGridArea extends StatelessWidget {
             return _InventoryStickerTile(
               assetPath: asset,
               slotIndex: index,
-              onTap: asset != null ? () => onTapSticker(asset, index) : null,
+              onTap: asset != null ? () => onShowDetail(asset) : null,
               onDropSticker: onDropSticker,
             );
           },
