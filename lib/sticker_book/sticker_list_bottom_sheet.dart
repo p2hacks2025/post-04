@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'models.dart';
 import 'seal_detail_overlay.dart';
 import 'sticker_tile.dart';
+import '../widgets/grid_background.dart';
+import '../widgets/category_tab.dart';
 
 class StickerListBottomSheet extends StatelessWidget {
   const StickerListBottomSheet({
@@ -93,7 +95,7 @@ class _StickerTabs extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             for (var i = 0; i < categories.length; i++)
-              _FileTab(
+              CategoryTab(
                 label: categories[i],
                 isSelected: selectedIndex == i,
                 onTap: () => onCategorySelected(i),
@@ -130,7 +132,7 @@ class _StickerGridArea extends StatelessWidget {
         const Positioned.fill(
           child: Padding(
             padding: EdgeInsets.only(right: 1),
-            child: _GridBackground(),
+            child: GridBackground(),
           ),
         ),
         GridView.builder(
@@ -255,100 +257,6 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
       child: Opacity(
         opacity: _isDragging ? 0.5 : 1,
         child: tile,
-      ),
-    );
-  }
-}
-
-class _GridBackground extends StatelessWidget {
-  const _GridBackground();
-
-  @override
-  Widget build(BuildContext context) {
-    return const CustomPaint(painter: _GridBackgroundPainter());
-  }
-}
-
-class _GridBackgroundPainter extends CustomPainter {
-  const _GridBackgroundPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const double step = 24;
-    final paint = Paint()
-      ..color = const Color(0xFFD9DDE3)
-      ..strokeWidth = 1;
-
-    final double width = size.width;
-    final double height = size.height;
-
-    for (double x = 0; x <= width + step; x += step) {
-      canvas.drawLine(Offset(x, 0), Offset(x, height), paint);
-    }
-    for (double y = 0; y <= height; y += step) {
-      canvas.drawLine(Offset(0, y), Offset(width, y), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _FileTab extends StatelessWidget {
-  const _FileTab({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.translucent,
-      onVerticalDragStart: (_) => onTap(),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFFE8D9) : const Color(0xFFF1F5F9),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(12),
-            topRight: Radius.circular(12),
-          ),
-          border: Border(
-            top: BorderSide(
-              color: isSelected
-                  ? const Color(0xFFC6845A)
-                  : const Color(0xFFCBD5E1),
-              width: 2,
-            ),
-            left: BorderSide(
-              color: isSelected
-                  ? const Color(0xFFC6845A)
-                  : const Color(0xFFCBD5E1),
-              width: 2,
-            ),
-            right: BorderSide(
-              color: isSelected
-                  ? const Color(0xFFC6845A)
-                  : const Color(0xFFCBD5E1),
-              width: 2,
-            ),
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected
-                ? const Color(0xFFC6845A)
-                : const Color(0xFF334155),
-            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-          ),
-        ),
       ),
     );
   }

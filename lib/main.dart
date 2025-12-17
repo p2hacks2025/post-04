@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'pages/sticker_book_page.dart';
+import 'pages/settings_page.dart';
 import 'widgets/navigation_bar.dart';
 
 void main() {
@@ -45,7 +46,7 @@ class _MainScreenState extends State<MainScreen> {
     const StickerBookPage(),
     const Center(child: Text('みんなの', style: TextStyle(fontSize: 24))),
     const Center(child: Text('あつめる', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('せってい', style: TextStyle(fontSize: 24))),
+    const SettingsPage(),
   ];
 
   @override
