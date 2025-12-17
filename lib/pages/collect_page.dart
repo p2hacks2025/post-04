@@ -16,10 +16,6 @@ class CollectPage extends StatelessWidget {
               label: 'ガチャであつめる',
               onPressed: () {
                 // ガチャ機能を後で追加
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const TradeMenuPage()),
-                );
               },
             ),
             // Container(
@@ -35,6 +31,12 @@ class CollectPage extends StatelessWidget {
               label: '交換であつめる',
               onPressed: () {
                 // 交換メニューへ遷移（QR生成/読み取りなど）
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TradeMenuPage(),
+                  ),
+                );
               },
             ),
           ],
