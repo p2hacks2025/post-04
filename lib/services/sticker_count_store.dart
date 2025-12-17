@@ -13,8 +13,10 @@ class StickerCountStore {
   Map<String, int> get counts => _counts;
   //シール数の読み込み
   Future<void> loadOrInit({int defaultCount = 1}) async {
+  // Future<void> loadOrInit({int defaultCount = 0, bool forceReset = false}) async {
     final file = await _getFile();
     if (await file.exists()) {
+    // if (await file.exists() && !forceReset) {
       try {
         final jsonMap = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
         final map = (jsonMap['counts'] as Map<String, dynamic>?) ?? {};
@@ -25,7 +27,7 @@ class StickerCountStore {
         return;
       } catch (_) {}
     }
-    // 初期化（既存4つは defaultCount、その他0）
+    // 初期化（全カタログを defaultCount で初期化）
     _counts = {
       for (final a in _catalogAssets) a: defaultCount,
     };

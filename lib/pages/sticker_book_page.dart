@@ -284,6 +284,8 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
 
     // シール枚数のDBをロード（なければ4種を1枚で初期化）
     await _countStore.loadOrInit(defaultCount: 1);
+    // // シール枚数のDBをロード（開発中: 強制的に0枚スタートにリセット）
+    // await _countStore.loadOrInit(defaultCount: 0, forceReset: true);
     _counts = Map<String, int>.from(_countStore.counts);
     _rebuildInventoryFromCounts();
 
