@@ -45,18 +45,4 @@ const List<StickerData> stickerMasterDb = [
     assetPath: 'assets/seals/star.glb',
     iconPath: 'assets/seals/star.glb',
   ),
-  StickerData(
-    number: 5,
-    id: 'star_001',
-    name: 'ほし',
-    assetPath: 'assets/seals/star.glb',
-    iconPath: 'assets/seals/star.glb',
-  ),
-  StickerData(
-    number: 6,
-    id: 'star_002',
-    name: 'ほし',
-    assetPath: 'assets/seals/star.glb',
-    iconPath: 'assets/seals/star.glb',
-  ),
 ];
