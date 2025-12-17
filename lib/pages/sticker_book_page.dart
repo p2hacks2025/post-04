@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:seal_app/sticker_book/models.dart';
+import 'package:seal_app/sticker_book/sticker_book_data.dart';
 import 'package:seal_app/sticker_book/sticker_book_pager.dart';
 import 'package:seal_app/sticker_book/sticker_list_bottom_sheet.dart';
 
@@ -11,10 +12,16 @@ class StickerBookPage extends StatefulWidget {
   State<StickerBookPage> createState() => _StickerBookPageState();
 }
 
-class _StickerBookPageState extends State<StickerBookPage> {
+class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingObserver {
   final List<String> _categories = const ['すべて', 'どうぶつ', 'のりもの', 'たべもの'];
   int _selectedCategoryIndex = 0;
 
+  final List<String> _glbAssets = const [
+    'assets/seals/heart.glb',
+    'assets/seals/cat.glb',
+    'assets/seals/circle.glb',
+    'assets/seals/star.glb',
+  ];
   List<String?> _inventorySlots = [];
 
   List<List<PlacedSticker>> _placedByPage = [];
@@ -23,8 +30,12 @@ class _StickerBookPageState extends State<StickerBookPage> {
   int? _pendingSlotIndex;
   List<GlobalKey> _boardKeys = [];
   bool _pageScrollEnabled = true;
+  bool _isLoading = true;
 
   final PageController _pageController = PageController();
+
+  static const int _inventorySize = 20;
+  static const int _pageCount = 4;
 
   final List<List<Color>> _boardGradients = const [
     [Color(0xFFD888FF), Color(0xFFF9C4E6)],
@@ -36,19 +47,41 @@ class _StickerBookPageState extends State<StickerBookPage> {
   @override
   void initState() {
     super.initState();
-    _inventorySlots = List<String?>.filled(20, 'assets/icons/home_icon.png');
+    WidgetsBinding.instance.addObserver(this);
     _initializePageCollections();
+    _loadData();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pageController.dispose();
+    // アプリ終了前にデータを保存
+    _saveData();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // アプリがバックグラウンドに移行した時、または終了する前にデータを保存
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _saveData();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     _initializePageCollections();
+    
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+    
     return Stack(
       children: [
         Column(
@@ -86,6 +119,7 @@ class _StickerBookPageState extends State<StickerBookPage> {
           },
           inventorySlots: _inventorySlots,
           onTapSticker: _handleStickerTap,
+          onDropSticker: _handleDropFromList,
         ),
       ],
     );
@@ -99,6 +133,29 @@ class _StickerBookPageState extends State<StickerBookPage> {
       _pendingSlotIndex = slotIndex;
       _selectedStickerId = null;
     });
+  }
+
+  void _handleDropFromList(InventoryPayload payload, Offset globalPosition) {
+    final page = (_pageController.page ?? 0).round().clamp(
+      0,
+      _boardKeys.length - 1,
+    );
+    final boardKey = _boardKeys[page];
+    final renderBox = boardKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    final topLeft = renderBox.localToGlobal(Offset.zero);
+    final rect = topLeft & renderBox.size;
+    if (!rect.contains(globalPosition)) return;
+
+    final local = renderBox.globalToLocal(globalPosition);
+    _placeSticker(
+      payload.asset,
+      payload.slotIndex,
+      local,
+      renderBox.size,
+      page,
+    );
   }
 
   void _placeSticker(
@@ -130,6 +187,7 @@ class _StickerBookPageState extends State<StickerBookPage> {
       _pendingSlotIndex = null;
       _selectedStickerId = sticker.id;
     });
+    _saveData();
   }
 
   void _updateSticker(
@@ -144,8 +202,14 @@ class _StickerBookPageState extends State<StickerBookPage> {
       for (var i = 0; i < _placedByPage[page].length; i++) {
         if (_placedByPage[page][i].id == id) {
           final clamped = Offset(
-            position.dx.clamp(stickerSize / 2, boardSize.width - stickerSize / 2),
-            position.dy.clamp(stickerSize / 2, boardSize.height - stickerSize / 2),
+            position.dx.clamp(
+              stickerSize / 2,
+              boardSize.width - stickerSize / 2,
+            ),
+            position.dy.clamp(
+              stickerSize / 2,
+              boardSize.height - stickerSize / 2,
+            ),
           );
           _placedByPage[page][i] = _placedByPage[page][i].copyWith(
             position: clamped,
@@ -155,6 +219,7 @@ class _StickerBookPageState extends State<StickerBookPage> {
         }
       }
     });
+    _saveData();
   }
 
   void _selectSticker(String id) {
@@ -177,6 +242,7 @@ class _StickerBookPageState extends State<StickerBookPage> {
         _selectedStickerId = null;
       }
     });
+    _saveData();
   }
 
   void _initializePageCollections() {
@@ -187,5 +253,39 @@ class _StickerBookPageState extends State<StickerBookPage> {
     if (_placedByPage.length != pageCount) {
       _placedByPage = List.generate(pageCount, (_) => <PlacedSticker>[]);
     }
+  }
+
+  /// データを読み込む
+  Future<void> _loadData() async {
+    final data = await StickerBookStorage.loadData(
+      defaultInventorySize: _inventorySize,
+      defaultPageCount: _pageCount,
+    );
+
+    setState(() {
+      if (data != null) {
+        _inventorySlots = List<String?>.from(data.inventorySlots);
+        _placedByPage = data.placedByPage
+            .map((page) => List<PlacedSticker>.from(page))
+            .toList();
+      } else {
+        // 初期データを設定
+        _inventorySlots = List<String?>.generate(_inventorySize, (index) {
+          if (index < _glbAssets.length) return _glbAssets[index];
+          return null;
+        });
+        _placedByPage = List.generate(_pageCount, (_) => <PlacedSticker>[]);
+      }
+      _isLoading = false;
+    });
+  }
+
+  /// データを保存する
+  Future<void> _saveData() async {
+    final data = StickerBookData(
+      inventorySlots: _inventorySlots,
+      placedByPage: _placedByPage,
+    );
+    await StickerBookStorage.saveData(data);
   }
 }
