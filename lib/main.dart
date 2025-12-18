@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'pages/sticker_book_page.dart';
 import 'pages/collect_page.dart';
 import 'widgets/navigation_bar.dart';
+import 'pages/start_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +18,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Seal App',
       theme: _buildTheme(),
-      home: const MainScreen(),
+      home: const StartScreen(),
+      routes: {
+        '/home': (_) => const MainScreen(),
+      },
     );
   }
 
