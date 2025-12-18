@@ -18,7 +18,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   final List<String> _categories = const ['すべて', 'どうぶつ', 'のりもの', 'たべもの'];
   int _selectedCategoryIndex = 0;
 
-  final List<StickerData> _catalog = stickerMasterDb;
+  final List<StickerData> _catalog = stickerMasterData;
   List<String?> _inventorySlots = [];
   late final StickerCountStore _countStore = StickerCountStore(
     _catalog.map((e) => e.assetPath).toList(growable: false),

@@ -54,7 +54,7 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
 
   int _getRarityFromMaster(String assetPath) {
     try {
-      final s = stickerMasterDb.firstWhere((e) => e.assetPath == assetPath);
+      final s = stickerMasterData.firstWhere((e) => e.assetPath == assetPath);
       return s.rarity;
     } catch (_) {
       return 1;

@@ -18,7 +18,7 @@ class StickerData {
 
 // 今あるアセット（assets/seals/*.glb）を使った暫定のマスターデータ。
 // アイコン画像が無いものは assetPath と同一にしています（GLBがそのまま表示されます）。
-const List<StickerData> stickerMasterDb = [
+const List<StickerData> stickerMasterData = [
   StickerData(
     number: 1,
     id: 'heart_001',

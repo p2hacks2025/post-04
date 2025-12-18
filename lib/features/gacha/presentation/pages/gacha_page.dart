@@ -39,7 +39,7 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    _catalog = List.of(stickerMasterDb)..sort((a, b) => a.number.compareTo(b.number));
+    _catalog = List.of(stickerMasterData)..sort((a, b) => a.number.compareTo(b.number));
     _countStore = StickerCountStore(_catalog.map((e) => e.assetPath).toList());
     _init();
   }

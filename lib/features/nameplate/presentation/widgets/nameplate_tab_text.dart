@@ -45,7 +45,7 @@ class _NameplateTabTextState extends State<NameplateTabText> {
           const SizedBox(height: 12),
           TextField(
             controller: _nameController,
-            maxLength: maxNameLength,
+            maxLength: NameplateColors.maxNameLength,
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'^[あ-ん]*$')),
             ],
@@ -60,8 +60,8 @@ class _NameplateTabTextState extends State<NameplateTabText> {
             style: const TextStyle(fontSize: 16),
             onChanged: (value) {
               final filtered = value.replaceAll(RegExp(r'[^あ-ん]'), '');
-              final limited = filtered.length > maxNameLength
-                  ? filtered.substring(0, maxNameLength)
+              final limited = filtered.length > NameplateColors.maxNameLength
+                  ? filtered.substring(0, NameplateColors.maxNameLength)
                   : filtered;
               if (limited != value) {
                 _nameController.value = TextEditingValue(

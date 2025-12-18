@@ -22,7 +22,7 @@ class _QrScanPageState extends State<QrScanPage> {
   void initState() {
     super.initState();
     _countStore = StickerCountStore(
-      stickerMasterDb.map((e) => e.assetPath).toList(),
+      stickerMasterData.map((e) => e.assetPath).toList(),
     );
     _init();
   }

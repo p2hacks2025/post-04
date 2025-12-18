@@ -26,7 +26,7 @@ class _NameplateTabDecorationsState extends State<NameplateTabDecorations> {
   final List<String> _categories = const ['すべて', 'どうぶつ', 'のりもの', 'たべもの'];
 
   void _addDecoration(DecorationType type) {
-    if (widget.data.decorations.length >= maxDecorations) {
+    if (widget.data.decorations.length >= NameplateColors.maxDecorations) {
       return;
     }
 

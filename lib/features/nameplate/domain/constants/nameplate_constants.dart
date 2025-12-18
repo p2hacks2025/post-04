@@ -17,10 +17,10 @@ class NameplateColors {
   static const Color textPrimary = Color(0xFF4A4A4A);
   static const Color textOnAccent = Color(0xFFFFFFFF);
   static const Color textSubtle = Color(0xFF9A9A9A);
+
+  /// デコレーションの最大数
+  static const int maxDecorations = 10;
+
+  /// 名前の最大文字数（ひらがな5文字）
+  static const int maxNameLength = 5;
 }
-
-/// デコレーションの最大数
-const int maxDecorations = 10;
-
-/// 名前の最大文字数（ひらがな5文字）
-const int maxNameLength = 5;
