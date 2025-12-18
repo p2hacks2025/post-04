@@ -206,7 +206,8 @@ class _ResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayPath = sticker.iconPath.isNotEmpty ? sticker.iconPath : sticker.assetPath;
+    // ガチャ結果はマスタの本体（assetPath）を表示する
+    final displayPath = sticker.assetPath;
     final isGlb = displayPath.toLowerCase().endsWith('.glb');
 
     return Material(
