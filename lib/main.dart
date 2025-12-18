@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'pages/sticker_book_page.dart';
+import 'pages/collect_page.dart';
 import 'widgets/navigation_bar.dart';
 
 void main() {
@@ -44,7 +45,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _pages = [
     const StickerBookPage(),
     const Center(child: Text('みんなの', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('あつめる', style: TextStyle(fontSize: 24))),
+    const CollectPage(),
     const Center(child: Text('せってい', style: TextStyle(fontSize: 24))),
   ];
 
