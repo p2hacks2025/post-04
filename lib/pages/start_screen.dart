@@ -25,8 +25,6 @@ class _StartScreenState extends State<StartScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    final safeBottom = MediaQuery.of(context).padding.bottom;
-
     return GestureDetector(
       onTap: _goHome,
       behavior: HitTestBehavior.opaque,
