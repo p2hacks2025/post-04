@@ -34,6 +34,20 @@ class StickerCountStore {
     await save();
   }
 
+  /// 保存済みの在庫ファイルを削除（次回 loadOrInit で defaultCount で再作成されます）
+  Future<void> deleteSavedFile() async {
+    final file = await _getFile();
+    if (await file.exists()) {
+      await file.delete();
+    }
+  }
+
+  /// すべての在庫を指定値にリセットして保存（開発・デバッグ用）
+  Future<void> resetAllTo(int value) async {
+    _counts = {for (final a in _catalogAssets) a: value};
+    await save();
+  }
+
   Future<void> save() async {
     final file = await _getFile();
     final data = {

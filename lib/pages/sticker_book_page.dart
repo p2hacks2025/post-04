@@ -282,7 +282,8 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     } else {
       _placedByPage = List.generate(_pageCount, (_) => <PlacedSticker>[]);
     }
-
+    //初期値リセット（開発用なので、後で消す）
+    _countStore.resetAllTo(7);
     // シール枚数のDBをロード（なければ4種を1枚で初期化）
     await _countStore.loadOrInit(defaultCount: 1);
     // // シール枚数のDBをロード（開発中: 強制的に0枚スタートにリセット）
