@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 import 'models.dart';
 import 'seal_metadata_service.dart';
+import 'package:seal_app/data/sticker_master.dart';
 
 class SealDetailOverlay extends StatefulWidget {
   const SealDetailOverlay({
@@ -23,10 +24,13 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
   bool _isLoading = true;
   AnimationController? _rotationController;
   Animation<double>? _rotationAnimation;
+  int _rarity = 1;
 
   @override
   void initState() {
     super.initState();
+    // マスターデータからレア度を決定（同期）
+    _rarity = _getRarityFromMaster(widget.assetPath);
     _loadMetadata();
     final isGlb = widget.assetPath.toLowerCase().endsWith('.glb');
     if (isGlb) {
@@ -44,6 +48,15 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
         ),
       );
       _rotationController!.repeat(reverse: true);
+    }
+  }
+
+  int _getRarityFromMaster(String assetPath) {
+    try {
+      final s = stickerMasterDb.firstWhere((e) => e.assetPath == assetPath);
+      return s.rarity;
+    } catch (_) {
+      return 1;
     }
   }
 
@@ -159,12 +172,11 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // レア度表示
-                  if (!_isLoading && _metadata != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 32, bottom: 16),
-                      child: _RarityStars(rarity: _metadata!.rarity),
-                    ),
+                  // レア度表示（マスターデータ基準）
+                  Padding(
+                    padding: const EdgeInsets.only(top: 32, bottom: 16),
+                    child: _RarityStars(rarity: _rarity.clamp(1, 5)),
+                  ),
                   const SizedBox(height: 24),
                 ],
               ),

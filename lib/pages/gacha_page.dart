@@ -233,7 +233,7 @@ class _ResultCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  isNew ? 'New!' : 'Lv.UP',
+                  isNew ? 'New!' : '',
                   style: TextStyle(
                     color: isNew ? const Color(0xFFB85B2A) : const Color(0xFF0F766E),
                     fontWeight: FontWeight.w900,
