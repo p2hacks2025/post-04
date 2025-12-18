@@ -4,6 +4,7 @@ class PlacedSticker {
   const PlacedSticker({
     required this.id,
     required this.asset,
+    this.displayAsset,
     required this.inventoryIndex,
     required this.position,
     required this.rotation,
@@ -12,6 +13,7 @@ class PlacedSticker {
 
   final String id;
   final String asset;
+  final String? displayAsset; // 表示用（PNGなど）。未指定なら asset を使用
   final int inventoryIndex;
   final Offset position;
   final double rotation;
@@ -22,10 +24,12 @@ class PlacedSticker {
     Offset? position,
     double? rotation,
     Size? size,
+    String? displayAsset,
   }) {
     return PlacedSticker(
       id: id,
       asset: asset,
+      displayAsset: displayAsset ?? this.displayAsset,
       inventoryIndex: inventoryIndex ?? this.inventoryIndex,
       position: position ?? this.position,
       rotation: rotation ?? this.rotation,
@@ -37,6 +41,7 @@ class PlacedSticker {
     return {
       'id': id,
       'asset': asset,
+      'displayAsset': displayAsset,
       'inventoryIndex': inventoryIndex,
       'position': {'dx': position.dx, 'dy': position.dy},
       'rotation': rotation,
@@ -48,6 +53,7 @@ class PlacedSticker {
     return PlacedSticker(
       id: json['id'] as String,
       asset: json['asset'] as String,
+      displayAsset: json['displayAsset'] as String?,
       inventoryIndex: json['inventoryIndex'] as int,
       position: Offset(
         (json['position'] as Map<String, dynamic>)['dx'] as double,

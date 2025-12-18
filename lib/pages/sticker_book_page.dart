@@ -180,6 +180,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     final sticker = PlacedSticker(
       id: '${DateTime.now().microsecondsSinceEpoch}-$page',
       asset: asset,
+      displayAsset: _iconByAsset[asset] ?? asset,
       inventoryIndex: slotIndex,
       position: clamped,
       rotation: 0,

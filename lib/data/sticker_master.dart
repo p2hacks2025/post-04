@@ -29,7 +29,7 @@ const List<StickerData> stickerMasterDb = [
     id: 'cat_001',
     name: 'ねこ',
     assetPath: 'assets/seals/cat.glb',
-    iconPath: 'assets/seals/cat.glb',
+    iconPath: 'assets/icons/cat.png',
   ),
   StickerData(
     number: 3,
