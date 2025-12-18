@@ -159,6 +159,7 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
               _ResultCard(
                 sticker: _result!,
                 isNew: _isNew,
+                ownedCount: _countStore.getCount(_result!.assetPath),
                 onClose: () => setState(() => _phase = _GachaPhase.idle),
                 onAgain: () {
                   setState(() => _phase = _GachaPhase.idle);
@@ -192,12 +193,14 @@ class _ResultCard extends StatelessWidget {
   const _ResultCard({
     required this.sticker,
     required this.isNew,
+    required this.ownedCount,
     required this.onClose,
     required this.onAgain,
   });
 
   final StickerData sticker;
   final bool isNew;
+  final int ownedCount;
   final VoidCallback onClose;
   final VoidCallback onAgain;
 
@@ -233,7 +236,7 @@ class _ResultCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  isNew ? 'New!' : '',
+                  isNew ? 'New!' : 'もってるかず: $ownedCountまい',
                   style: TextStyle(
                     color: isNew ? const Color(0xFFB85B2A) : const Color(0xFF0F766E),
                     fontWeight: FontWeight.w900,
