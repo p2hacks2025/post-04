@@ -9,7 +9,8 @@ class StartScreen extends StatefulWidget {
   State<StartScreen> createState() => _StartScreenState();
 }
 
-class _StartScreenState extends State<StartScreen> with SingleTickerProviderStateMixin {
+class _StartScreenState extends State<StartScreen>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 2400),
@@ -33,43 +34,53 @@ class _StartScreenState extends State<StartScreen> with SingleTickerProviderStat
           children: [
             const _CandyBackdrop(),
             IgnorePointer(child: _StickerConfetti(controller: _c)),
-            Center(
-              child: AnimatedBuilder(
-                animation: _c,
-                builder: (context, _) {
-                  final t = (sin(_c.value * pi) + 1) / 2; // 0..1
-                  final floatY = lerpDouble(8, -8, t)!;
-                  return Transform.translate(
-                    offset: Offset(0, floatY),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // _LogoCard(glow: 0.12 + t * 0.18),
-                        const SizedBox(height: 18),
-                        const Text(
-                          'Sticker Swap',
-                          style: TextStyle(
-                            fontSize: 34,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.2,
-                            color: Color(0xFF4C3B66),
+
+            SafeArea(
+              // ← 追加：ノッチ等を除いた領域で中央
+              child: Center(
+                child: AnimatedBuilder(
+                  animation: _c,
+                  builder: (context, _) {
+                    final t = (sin(_c.value * pi) + 1) / 2;
+                    final floatY = lerpDouble(8, -8, t)!;
+                    final lift = -10.0; // 全体を少し上に持ち上げる
+
+                    return Transform.translate(
+                      offset: Offset(0, floatY + lift),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 18),
+                          const Text(
+                            'タイトル未定',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 34,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.2,
+                              color: Color(0xFF4C3B66),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '集めて、交換して、シール帳にぺたっ。',
-                          style: TextStyle(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF4C3B66).withValues(alpha: 0.65),
+                          const SizedBox(height: 8),
+                          Text(
+                            '集めて、交換して、シール帳にぺたっ。',
+                            textAlign: TextAlign.center, // ← 明示
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(
+                                0xFF4C3B66,
+                              ).withValues(alpha: 0.65),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 26),
-                        _TapStartPill(pulse: t),
-                      ],
-                    ),
-                  );
-                },
+                          const SizedBox(height: 26),
+                          _TapStartPill(pulse: t),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -140,86 +151,6 @@ class _GlowBlob extends StatelessWidget {
   }
 }
 
-// class _LogoCard extends StatelessWidget {
-//   final double glow;
-//   const _LogoCard({required this.glow});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       width: 260,
-//       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-//       decoration: BoxDecoration(
-//         color: Colors.white.withValues(alpha: 0.82),
-//         borderRadius: BorderRadius.circular(28),
-//         border: Border.all(color: const Color(0x334C3B66)),
-//         boxShadow: [
-//           BoxShadow(
-//             color: const Color(0xFFFF5FAE).withValues(alpha: glow),
-//             blurRadius: 28,
-//             spreadRadius: 2,
-//             offset: const Offset(0, 12),
-//           ),
-//           BoxShadow(
-//             color: Colors.black.withValues(alpha: 0.08),
-//             blurRadius: 16,
-//             offset: const Offset(0, 10),
-//           ),
-//         ],
-//       ),
-//       child: Row(
-//         crossAxisAlignment: CrossAxisAlignment.center,
-//         children: [
-//           // ロゴ風バッジ（ステッカーっぽい）
-//           Container(
-//             width: 64,
-//             height: 64,
-//             decoration: BoxDecoration(
-//               color: const Color(0xFFFFEAF6),
-//               borderRadius: BorderRadius.circular(18),
-//               border: Border.all(color: const Color(0x33FF5FAE), width: 1.2),
-//             ),
-//             child: const Center(
-//               child: Icon(
-//                 Icons.auto_awesome_rounded,
-//                 size: 34,
-//                 color: Color(0xFFFF5FAE),
-//               ),
-//             ),
-//           ),
-//           const SizedBox(width: 14),
-//           Expanded(
-//             child: Column(
-//               mainAxisSize: MainAxisSize.min,
-//               children: [
-//                 const Text(
-//                   'シールを\n集めて、交換して、のこそう。',
-//                   style: TextStyle(
-//                     fontSize: 18,
-//                     fontWeight: FontWeight.w900,
-//                      height: 1.12,
-//                     color: Color(0xFF4C3B66),
-//                   ),
-//                 ),
-//                 const SizedBox(height: 6),
-//                 Text(
-//                   '',
-//                   style: TextStyle(
-//                     height: 1.2,
-//                     fontSize: 12.5,
-//                     fontWeight: FontWeight.w700,
-//                     color: const Color(0xFF4C3B66).withValues(alpha: 0.65),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
 class _TapStartPill extends StatelessWidget {
   final double pulse; // 0..1
   const _TapStartPill({required this.pulse});
@@ -243,7 +174,9 @@ class _TapStartPill extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFFF5FAE).withValues(alpha: 0.25 + pulse * 0.20),
+              color: const Color(
+                0xFFFF5FAE,
+              ).withValues(alpha: 0.25 + pulse * 0.20),
               blurRadius: 24,
               offset: const Offset(0, 10),
             ),
@@ -290,7 +223,6 @@ class _StickerPainter extends CustomPainter {
   final double t; // 0..1
   _StickerPainter({required this.t});
 
-  final _rng = const _Seeded(42);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -299,11 +231,39 @@ class _StickerPainter extends CustomPainter {
     // “散らしたステッカー”の位置（固定）
     final items = <_Sticker>[
       _Sticker(0.12, 0.18, 26, 12, const Color(0xFFFFE27A), Icons.star_rounded),
-      _Sticker(0.86, 0.16, 24, -10, const Color(0xFFB9F0FF), Icons.favorite_rounded),
-      _Sticker(0.10, 0.78, 28, -14, const Color(0xFFFFB3D9), Icons.local_florist_rounded),
+      _Sticker(
+        0.86,
+        0.16,
+        24,
+        -10,
+        const Color(0xFFB9F0FF),
+        Icons.favorite_rounded,
+      ),
+      _Sticker(
+        0.10,
+        0.78,
+        28,
+        -14,
+        const Color(0xFFFFB3D9),
+        Icons.local_florist_rounded,
+      ),
       _Sticker(0.88, 0.78, 30, 10, const Color(0xFFC9FFB8), Icons.bolt_rounded),
-      _Sticker(0.22, 0.42, 18, 8, const Color(0xFFE7E2FF), Icons.auto_awesome_rounded),
-      _Sticker(0.78, 0.45, 20, -6, const Color(0xFFFFD9F2), Icons.music_note_rounded),
+      _Sticker(
+        0.20,
+        0.42,
+        18,
+        8,
+        const Color(0xFFE7E2FF),
+        Icons.auto_awesome_rounded,
+      ),
+      _Sticker(
+        0.83,
+        0.45,
+        20,
+        -6,
+        const Color(0xFFFFD9F2),
+        Icons.music_note_rounded,
+      ),
     ];
 
     for (final s in items) {
@@ -311,7 +271,11 @@ class _StickerPainter extends CustomPainter {
       final cx = s.x * size.width;
       final cy = s.y * size.height + wobble;
 
-      final r = Rect.fromCenter(center: Offset(cx, cy), width: s.size * 2.2, height: s.size * 2.2);
+      final r = Rect.fromCenter(
+        center: Offset(cx, cy),
+        width: s.size * 2.2,
+        height: s.size * 2.2,
+      );
       final rot = (s.rotDeg * pi / 180) + sin((t * 2 * pi) + s.x * 9) * 0.06;
 
       canvas.save();
@@ -332,12 +296,7 @@ class _StickerPainter extends CustomPainter {
       canvas.drawRRect(rr.shift(const Offset(0, 10)), shadow);
       canvas.drawRRect(rr, paint);
 
-      // キラッとハイライト
-      final hi = Paint()
-        ..color = Colors.white.withValues(alpha: 0.20)
-        ..style = PaintingStyle.fill;
-      final hiR = Rect.fromCenter(center: Offset(cx - 10, cy - 10), width: s.size * 1.2, height: s.size * 0.7);
-      canvas.drawRRect(RRect.fromRectAndRadius(hiR, const Radius.circular(12)), hi);
+ 
 
       // アイコン
       final iconPainter = TextPainter(
@@ -360,19 +319,12 @@ class _StickerPainter extends CustomPainter {
       canvas.restore();
     }
 
-    // ふんわりドット（軽量）
-    final p = Paint()..style = PaintingStyle.fill;
-    for (var i = 0; i < 18; i++) {
-      final x = _rng.next(i * 2) * size.width;
-      final y = _rng.next(i * 2 + 1) * size.height;
-      final a = 0.03 + 0.05 * (sin((t * 2 * pi) + i) + 1) / 2;
-      p.color = const Color(0xFF4C3B66).withValues(alpha: a);
-      canvas.drawCircle(Offset(x, y), 1.2 + (i % 3) * 0.6, p);
-    }
+
   }
 
   @override
-  bool shouldRepaint(covariant _StickerPainter oldDelegate) => oldDelegate.t != t;
+  bool shouldRepaint(covariant _StickerPainter oldDelegate) =>
+      oldDelegate.t != t;
 }
 
 class _Sticker {
@@ -382,16 +334,4 @@ class _Sticker {
   final Color color;
   final IconData icon;
   _Sticker(this.x, this.y, this.size, this.rotDeg, this.color, this.icon);
-}
-
-/// 疑似乱数（固定）—毎回同じ見た目
-class _Seeded {
-  final int seed;
-  const _Seeded(this.seed);
-
-  double next(int n) {
-    // 0..1
-    final v = sin((seed + n) * 999.97) * 10000;
-    return v - v.floorToDouble();
-  }
 }
