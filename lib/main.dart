@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'core/constants/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/navigation_bar.dart';
 import 'features/collect/presentation/pages/collect_page.dart';
@@ -48,7 +49,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0), // TODO: AppColors.background に置き換え
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Stack(
           children: [
