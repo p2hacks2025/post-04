@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'pages/sticker_book_page.dart';
-import 'pages/collect_page.dart';
-import 'widgets/navigation_bar.dart';
+import 'core/constants/app_colors.dart';
+import 'core/theme/app_theme.dart';
+import 'core/widgets/navigation_bar.dart';
+import 'features/collect/presentation/pages/collect_page.dart';
+import 'features/settings/presentation/pages/settings_page.dart';
+import 'features/sticker_book/presentation/pages/sticker_book_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,13 +24,7 @@ class MyApp extends StatelessWidget {
   }
 
   ThemeData _buildTheme() {
-    final ThemeData baseTheme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFC6845A)),
-    );
-
-    return baseTheme.copyWith(
-      textTheme: GoogleFonts.zenMaruGothicTextTheme(baseTheme.textTheme),
-    );
+    return AppTheme.buildTheme();
   }
 }
 
@@ -41,18 +37,19 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  final GlobalKey<State<StickerBookPage>> _stickerBookKey = GlobalKey<State<StickerBookPage>>();
 
-  final List<Widget> _pages = [
-    const StickerBookPage(),
+  List<Widget> get _pages => [
+    StickerBookPage(key: _stickerBookKey),
     const Center(child: Text('みんなの', style: TextStyle(fontSize: 24))),
     const CollectPage(),
-    const Center(child: Text('せってい', style: TextStyle(fontSize: 24))),
+    const SettingsPage(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Stack(
           children: [
@@ -64,9 +61,16 @@ class _MainScreenState extends State<MainScreen> {
               child: CustomNavigationBar(
                 selectedIndex: _selectedIndex,
                 onItemTapped: (index) {
+                  final previousIndex = _selectedIndex;
                   setState(() {
                     _selectedIndex = index;
                   });
+                  if (index == 0 && previousIndex != 0) {
+                    final state = _stickerBookKey.currentState;
+                    if (state != null) {
+                      (state as dynamic).reloadCounts();
+                    }
+                  }
                 },
               ),
             ),
