@@ -42,9 +42,10 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
+  final GlobalKey<State<StickerBookPage>> _stickerBookKey = GlobalKey<State<StickerBookPage>>();
 
-  final List<Widget> _pages = [
-    const StickerBookPage(),
+  List<Widget> get _pages => [
+    StickerBookPage(key: _stickerBookKey),
     const Center(child: Text('みんなの', style: TextStyle(fontSize: 24))),
     const CollectPage(),
     const SettingsPage(),
@@ -65,9 +66,16 @@ class _MainScreenState extends State<MainScreen> {
               child: CustomNavigationBar(
                 selectedIndex: _selectedIndex,
                 onItemTapped: (index) {
+                  final previousIndex = _selectedIndex;
                   setState(() {
                     _selectedIndex = index;
                   });
+                  if (index == 0 && previousIndex != 0) {
+                    final state = _stickerBookKey.currentState;
+                    if (state != null) {
+                      (state as dynamic).reloadCounts();
+                    }
+                  }
                 },
               ),
             ),

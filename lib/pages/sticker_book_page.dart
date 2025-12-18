@@ -68,10 +68,25 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    // アプリがバックグラウンドに移行した時、または終了する前にデータを保存
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       _saveData();
+    } else if (state == AppLifecycleState.resumed) {
+      _reloadCounts();
     }
+  }
+
+  Future<void> reloadCounts() async {
+    await _countStore.loadOrInit();
+    _counts = Map<String, int>.from(_countStore.counts);
+    if (mounted) {
+      setState(() {
+        _rebuildInventoryFromCounts();
+      });
+    }
+  }
+
+  Future<void> _reloadCounts() async {
+    await reloadCounts();
   }
 
   @override
@@ -104,8 +119,8 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
               selectedId: _selectedStickerId,
               pendingStickerAsset: _pendingStickerAsset,
               pendingSlotIndex: _pendingSlotIndex,
-              onPlace: (asset, slotIndex, pos, size, page) =>
-                  _placeSticker(asset, slotIndex, pos, size, page),
+              onPlace: (asset, slotIndex, pos, size, page) async =>
+                  await _placeSticker(asset, slotIndex, pos, size, page),
               onSelect: _selectSticker,
               onUpdate: (id, pos, rot, size, page) =>
                   _updateSticker(id, pos, rot, size, page),
@@ -140,7 +155,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     });
   }
 
-  void _handleDropFromList(InventoryPayload payload, Offset globalPosition) {
+  Future<void> _handleDropFromList(InventoryPayload payload, Offset globalPosition) async {
     final page = (_pageController.page ?? 0).round().clamp(
       0,
       _boardKeys.length - 1,
@@ -154,7 +169,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     if (!rect.contains(globalPosition)) return;
 
     final local = renderBox.globalToLocal(globalPosition);
-    _placeSticker(
+    await _placeSticker(
       payload.asset,
       payload.slotIndex,
       local,
@@ -163,13 +178,13 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     );
   }
 
-  void _placeSticker(
+  Future<void> _placeSticker(
     String asset,
     int slotIndex,
     Offset position,
     Size boardSize, [
     int page = 0,
-  ]) {
+  ]) async {
     if (slotIndex < 0 || slotIndex >= _inventorySlots.length) return;
     if (_inventorySlots[slotIndex] != asset) return;
     const stickerSize = 72.0;
@@ -186,12 +201,9 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       rotation: 0,
       size: const Size(stickerSize, stickerSize),
     );
+    await _countStore.dec(asset);
+    _counts = Map<String, int>.from(_countStore.counts);
     setState(() {
-      // 枚数を1枚消費し、一覧を再構築
-      final current = (_counts[asset] ?? 0);
-      if (current > 0) {
-        _counts[asset] = current - 1;
-      }
       _rebuildInventoryFromCounts();
       _placedByPage[page].add(sticker);
       _pendingStickerAsset = null;
@@ -199,7 +211,6 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       _selectedStickerId = sticker.id;
     });
     _saveData();
-    _countStore.save();
   }
 
   void _updateSticker(
@@ -242,20 +253,19 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     });
   }
 
-  void _removeSticker(String id, int page) {
+  Future<void> _removeSticker(String id, int page) async {
+    final sticker = _placedByPage[page].firstWhere((s) => s.id == id);
+    final asset = sticker.asset;
+    await _countStore.inc(asset);
+    _counts = Map<String, int>.from(_countStore.counts);
     setState(() {
-      final sticker = _placedByPage[page].firstWhere((s) => s.id == id);
       _placedByPage[page].removeWhere((s) => s.id == id);
-      // 枚数を1枚戻し、一覧を再構築
-      final asset = sticker.asset;
-      _counts[asset] = (_counts[asset] ?? 0) + 1;
       _rebuildInventoryFromCounts();
       if (_selectedStickerId == id) {
         _selectedStickerId = null;
       }
     });
     _saveData();
-    _countStore.save();
   }
 
   void _initializePageCollections() {

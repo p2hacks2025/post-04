@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 class NameplateSaveService {
   static Future<bool> saveImage(GlobalKey previewKey) async {
@@ -93,13 +93,19 @@ class NameplateSaveService {
       picture.dispose();
       picture = null;
 
-      final result = await ImageGallerySaver.saveImage(
+      // 権限をリクエスト
+      final PermissionState ps = await PhotoManager.requestPermissionExtend();
+      if (!ps.isAuth) {
+        debugPrint('画像保存エラー: 写真ライブラリへのアクセス権限がありません');
+        return false;
+      }
+
+      final AssetEntity? entity = await PhotoManager.editor.saveImage(
         pngBytes,
-        quality: 100,
-        name: 'nameplate_${DateTime.now().millisecondsSinceEpoch}',
+        filename: 'nameplate_${DateTime.now().millisecondsSinceEpoch}.png',
       );
 
-      return result['isSuccess'] == true;
+      return entity != null;
     } catch (e, stackTrace) {
       debugPrint('画像保存エラー: $e');
       debugPrint('スタックトレース: $stackTrace');

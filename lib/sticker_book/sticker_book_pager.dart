@@ -30,7 +30,7 @@ class StickerBookPager extends StatelessWidget {
   final String? selectedId;
   final String? pendingStickerAsset;
   final int? pendingSlotIndex;
-  final void Function(
+  final Future<void> Function(
     String asset,
     int slotIndex,
     Offset position,
@@ -45,7 +45,7 @@ class StickerBookPager extends StatelessWidget {
     Size boardSize,
     int page,
   ) onUpdate;
-  final void Function(String id, int page) onRemove;
+  final Future<void> Function(String id, int page) onRemove;
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +103,7 @@ class _StickerBoardPage extends StatefulWidget {
   final void Function(String id) onSelect;
   final void Function(String id, Offset position, double rotation, Size boardSize)
       onUpdate;
-  final void Function(String id) onRemove;
+  final Future<void> Function(String id) onRemove;
   final ValueChanged<bool> onInteractionToggle;
 
   @override

@@ -22,7 +22,7 @@ class PlacedStickerWidget extends StatelessWidget {
   final void Function(String id) onSelect;
   final void Function(String id, Offset position, double rotation, Size boardSize)
       onUpdate;
-  final void Function(String id) onRemove;
+  final Future<void> Function(String id) onRemove;
   final ValueChanged<bool> onInteractionToggle;
 
   @override
@@ -61,7 +61,7 @@ class DraggableSticker extends StatefulWidget {
   final void Function(String id) onSelect;
   final void Function(String id, Offset position, double rotation, Size boardSize)
       onUpdate;
-  final void Function(String id) onRemove;
+  final Future<void> Function(String id) onRemove;
   final ValueChanged<bool> onInteractionToggle;
 
   @override
