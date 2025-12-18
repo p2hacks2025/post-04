@@ -20,7 +20,9 @@ class _QrScanPageState extends State<QrScanPage> {
   @override
   void initState() {
     super.initState();
-    _countStore = StickerCountStore(stickerMasterDb.map((e) => e.assetPath).toList());
+    _countStore = StickerCountStore(
+      stickerMasterDb.map((e) => e.assetPath).toList(),
+    );
     _init();
   }
 
@@ -37,18 +39,18 @@ class _QrScanPageState extends State<QrScanPage> {
       body: !_ready
           ? const Center(child: CircularProgressIndicator())
           : MobileScanner(
-        onDetect: (capture) {
-          if (_isScanned) return; // 既に読んでたら無視
-          
-          final List<Barcode> barcodes = capture.barcodes;
-          for (final barcode in barcodes) {
-            if (barcode.rawValue != null) {
-              _onDetect(context, barcode.rawValue!);
-              break;
-            }
-          }
-        },
-      ),
+              onDetect: (capture) {
+                if (_isScanned) return; // 既に読んでたら無視
+
+                final List<Barcode> barcodes = capture.barcodes;
+                for (final barcode in barcodes) {
+                  if (barcode.rawValue != null) {
+                    _onDetect(context, barcode.rawValue!);
+                    break;
+                  }
+                }
+              },
+            ),
     );
   }
 
@@ -58,7 +60,8 @@ class _QrScanPageState extends State<QrScanPage> {
     try {
       final data = jsonDecode(jsonString);
       final String? type = data['type'];
-      if (type == 'sticker_transfer' || (type == null && data['asset'] != null)) {
+      if (type == 'sticker_transfer' ||
+          (type == null && data['asset'] != null)) {
         final String asset = data['asset'];
         final String name = (data['name'] as String?) ?? 'シール';
         _handleReceive(context, name, asset);
@@ -70,14 +73,18 @@ class _QrScanPageState extends State<QrScanPage> {
       }
     } catch (e) {
       // JSONじゃなかった場合などのエラー
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('シールのQRコードではありません')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('シールのQRコードではありません')));
       setState(() => _isScanned = false); // ロック解除して再スキャン可能に
     }
   }
 
-  Future<void> _handleReceive(BuildContext context, String name, String asset) async {
+  Future<void> _handleReceive(
+    BuildContext context,
+    String name,
+    String asset,
+  ) async {
     await _countStore.inc(asset);
     if (!context.mounted) return;
     showDialog(
@@ -92,13 +99,19 @@ class _QrScanPageState extends State<QrScanPage> {
             const SizedBox(height: 12),
             Text('「$name」を受け取りました！'),
             const SizedBox(height: 12),
-            const Text('送り主に在庫を-1してもらう場合は、\n確認QRを見せてあげてください。', textAlign: TextAlign.center),
+            const Text(
+              '送り主に在庫を-1してもらう場合は、\n確認QRを見せてあげてください。',
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 12),
             // 確認QR（送信者がこれを読み取ると-1される）
-            QrImageView(
-              data: jsonEncode({'type': 'transfer_confirm', 'asset': asset}),
-              version: QrVersions.auto,
-              size: 200,
+            SizedBox(
+              width: 200,
+              height: 200,
+              child: QrImageView(
+                data: jsonEncode({'type': 'transfer_confirm', 'asset': asset}),
+                version: QrVersions.auto,
+              ),
             ),
           ],
         ),
@@ -115,7 +128,10 @@ class _QrScanPageState extends State<QrScanPage> {
     );
   }
 
-  Future<void> _handleConfirmForSender(BuildContext context, String asset) async {
+  Future<void> _handleConfirmForSender(
+    BuildContext context,
+    String asset,
+  ) async {
     await _countStore.dec(asset);
     if (!context.mounted) return;
     showDialog(
