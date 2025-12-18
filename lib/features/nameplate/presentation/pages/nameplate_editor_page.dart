@@ -113,8 +113,7 @@ class _NameplateEditorPageState extends State<NameplateEditorPage> {
                 (constraints.maxHeight - estimatedPreviewHeight - 24).clamp(
                       280.0,
                       constraints.maxHeight * 0.7,
-                    )
-                    as double;
+                    );
 
             return SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 16),

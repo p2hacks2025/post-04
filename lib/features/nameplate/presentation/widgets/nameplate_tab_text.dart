@@ -256,7 +256,7 @@ class _TextColorSelector extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: textColors.map((color) {
-        final isSelected = color.value == selected.value;
+        final isSelected = color.toARGB32() == selected.toARGB32();
         return GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();

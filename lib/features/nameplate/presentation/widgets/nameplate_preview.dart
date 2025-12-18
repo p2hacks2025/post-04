@@ -275,7 +275,7 @@ class _DecorationWidgetState extends State<_DecorationWidget> {
             : null,
         child: Transform.rotate(
           angle: widget.decoration.rotation,
-          child: Container(
+          child: SizedBox(
             width: widget.decoration.size,
             height: widget.decoration.size,
             child: _getDecorationIcon(widget.decoration.type),

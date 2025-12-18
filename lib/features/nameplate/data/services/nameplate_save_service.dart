@@ -26,7 +26,7 @@ class NameplateSaveService {
       final availableWidth = squareSize - horizontalPadding * 2;
 
       recorder = ui.PictureRecorder();
-      final canvas = Canvas(recorder!);
+      final canvas = Canvas(recorder);
 
       canvas.drawRect(
         Rect.fromLTWH(0, 0, squareSize, squareSize),
@@ -69,7 +69,7 @@ class NameplateSaveService {
       picture = recorder.endRecording();
       recorder = null;
 
-      resizedImage = await picture!.toImage(
+      resizedImage = await picture.toImage(
         squareSize.toInt(),
         squareSize.toInt(),
       );
@@ -99,12 +99,12 @@ class NameplateSaveService {
         return false;
       }
 
-      final AssetEntity? entity = await PhotoManager.editor.saveImage(
+      await PhotoManager.editor.saveImage(
         pngBytes,
         filename: 'nameplate_${DateTime.now().millisecondsSinceEpoch}.png',
       );
 
-      return entity != null;
+      return true;
     } catch (e, stackTrace) {
       debugPrint('画像保存エラー: $e');
       debugPrint('スタックトレース: $stackTrace');
