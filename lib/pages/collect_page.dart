@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seal_app/trade/trade_menu_page.dart';
+import 'package:seal_app/pages/gacha_page.dart';
 
 class CollectPage extends StatelessWidget {
   const CollectPage({super.key});
@@ -15,7 +16,10 @@ class CollectPage extends StatelessWidget {
             _CollectButton(
               label: 'ガチャであつめる',
               onPressed: () {
-                // ガチャ機能を後で追加
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const GachaPage()),
+                );
               },
             ),
             // Container(

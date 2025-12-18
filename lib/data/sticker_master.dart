@@ -4,6 +4,7 @@ class StickerData {
   final String name; // 表示名
   final String assetPath; // 3Dモデル or 画像本体
   final String iconPath; // 一覧用サムネイル（無い場合は同一パス）
+  final int rarity; // レア度（1=ノーマル〜5=レア）
 
   const StickerData({
     required this.number,
@@ -11,6 +12,7 @@ class StickerData {
     required this.name,
     required this.assetPath,
     required this.iconPath,
+    this.rarity = 1,
   });
 }
 
@@ -23,6 +25,7 @@ const List<StickerData> stickerMasterDb = [
     name: 'ハート',
     assetPath: 'assets/seals/heart.glb',
     iconPath: 'assets/seals/heart.glb',
+    rarity: 1,
   ),
   StickerData(
     number: 2,
@@ -30,6 +33,7 @@ const List<StickerData> stickerMasterDb = [
     name: 'ねこ',
     assetPath: 'assets/seals/cat.glb',
     iconPath: 'assets/icons/cat.png',
+    rarity: 2,
   ),
   StickerData(
     number: 3,
@@ -37,6 +41,7 @@ const List<StickerData> stickerMasterDb = [
     name: 'まる',
     assetPath: 'assets/seals/circle.glb',
     iconPath: 'assets/seals/circle.glb',
+    rarity: 1,
   ),
   StickerData(
     number: 4,
@@ -44,5 +49,6 @@ const List<StickerData> stickerMasterDb = [
     name: 'ほし',
     assetPath: 'assets/seals/star.glb',
     iconPath: 'assets/seals/star.glb',
+    rarity: 3,
   ),
 ];
