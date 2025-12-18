@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'pages/sticker_book_page.dart';
-import 'pages/settings_page.dart';
-import 'pages/collect_page.dart';
-import 'widgets/navigation_bar.dart';
+import 'core/theme/app_theme.dart';
+import 'core/widgets/navigation_bar.dart';
+import 'features/collect/presentation/pages/collect_page.dart';
+import 'features/settings/presentation/pages/settings_page.dart';
+import 'features/sticker_book/presentation/pages/sticker_book_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,13 +23,7 @@ class MyApp extends StatelessWidget {
   }
 
   ThemeData _buildTheme() {
-    final ThemeData baseTheme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFC6845A)),
-    );
-
-    return baseTheme.copyWith(
-      textTheme: GoogleFonts.zenMaruGothicTextTheme(baseTheme.textTheme),
-    );
+    return AppTheme.buildTheme();
   }
 }
 
@@ -54,7 +48,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: const Color(0xFFFFF8F0), // TODO: AppColors.background に置き換え
       body: SafeArea(
         child: Stack(
           children: [
