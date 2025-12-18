@@ -89,7 +89,8 @@ class _DraggableStickerState extends State<DraggableSticker> {
 
   @override
   Widget build(BuildContext context) {
-    final isGlb = widget.sticker.asset.toLowerCase().endsWith('.glb');
+    final displayPath = (widget.sticker.displayAsset ?? widget.sticker.asset);
+    final isGlb = displayPath.toLowerCase().endsWith('.glb');
     return GestureDetector(
       onTap: () => widget.onSelect(widget.sticker.id),
       onTapDown: (_) => widget.onInteractionToggle(false),
@@ -134,7 +135,7 @@ class _DraggableStickerState extends State<DraggableSticker> {
           Transform.rotate(
             angle: _localRotation,
             child: StickerTile(
-              assetPath: widget.sticker.asset,
+                assetPath: displayPath,
               size: widget.sticker.size.width,
               useModelViewer: isGlb,
             ),

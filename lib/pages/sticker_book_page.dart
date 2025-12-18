@@ -4,6 +4,8 @@ import 'package:seal_app/sticker_book/models.dart';
 import 'package:seal_app/sticker_book/sticker_book_data.dart';
 import 'package:seal_app/sticker_book/sticker_book_pager.dart';
 import 'package:seal_app/sticker_book/sticker_list_bottom_sheet.dart';
+import 'package:seal_app/services/sticker_count_store.dart';
+import 'package:seal_app/data/sticker_master.dart';
 
 class StickerBookPage extends StatefulWidget {
   const StickerBookPage({super.key});
@@ -16,13 +18,15 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   final List<String> _categories = const ['すべて', 'どうぶつ', 'のりもの', 'たべもの'];
   int _selectedCategoryIndex = 0;
 
-  final List<String> _glbAssets = const [
-    'assets/seals/heart.glb',
-    'assets/seals/cat.glb',
-    'assets/seals/circle.glb',
-    'assets/seals/star.glb',
-  ];
+  final List<StickerData> _catalog = stickerMasterDb;
   List<String?> _inventorySlots = [];
+  late final StickerCountStore _countStore = StickerCountStore(
+    _catalog.map((e) => e.assetPath).toList(growable: false),
+  );
+  late final Map<String, String> _iconByAsset = {
+    for (final s in _catalog) s.assetPath: s.iconPath,
+  };
+  Map<String, int> _counts = {};
 
   List<List<PlacedSticker>> _placedByPage = [];
   String? _selectedStickerId;
@@ -120,6 +124,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
           inventorySlots: _inventorySlots,
           onTapSticker: _handleStickerTap,
           onDropSticker: _handleDropFromList,
+          displayAssetResolver: (asset) => _iconByAsset[asset] ?? asset,
         ),
       ],
     );
@@ -175,19 +180,26 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     final sticker = PlacedSticker(
       id: '${DateTime.now().microsecondsSinceEpoch}-$page',
       asset: asset,
+      displayAsset: _iconByAsset[asset] ?? asset,
       inventoryIndex: slotIndex,
       position: clamped,
       rotation: 0,
       size: const Size(stickerSize, stickerSize),
     );
     setState(() {
-      _inventorySlots[slotIndex] = null;
+      // 枚数を1枚消費し、一覧を再構築
+      final current = (_counts[asset] ?? 0);
+      if (current > 0) {
+        _counts[asset] = current - 1;
+      }
+      _rebuildInventoryFromCounts();
       _placedByPage[page].add(sticker);
       _pendingStickerAsset = null;
       _pendingSlotIndex = null;
       _selectedStickerId = sticker.id;
     });
     _saveData();
+    _countStore.save();
   }
 
   void _updateSticker(
@@ -234,15 +246,16 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     setState(() {
       final sticker = _placedByPage[page].firstWhere((s) => s.id == id);
       _placedByPage[page].removeWhere((s) => s.id == id);
-      if (sticker.inventoryIndex >= 0 &&
-          sticker.inventoryIndex < _inventorySlots.length) {
-        _inventorySlots[sticker.inventoryIndex] = sticker.asset;
-      }
+      // 枚数を1枚戻し、一覧を再構築
+      final asset = sticker.asset;
+      _counts[asset] = (_counts[asset] ?? 0) + 1;
+      _rebuildInventoryFromCounts();
       if (_selectedStickerId == id) {
         _selectedStickerId = null;
       }
     });
     _saveData();
+    _countStore.save();
   }
 
   void _initializePageCollections() {
@@ -262,22 +275,31 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       defaultPageCount: _pageCount,
     );
 
+    if (data != null) {
+      _placedByPage = data.placedByPage
+          .map((page) => List<PlacedSticker>.from(page))
+          .toList();
+    } else {
+      _placedByPage = List.generate(_pageCount, (_) => <PlacedSticker>[]);
+    }
+    //初期値リセット（開発用なので、後で消す）
+    _countStore.resetAllTo(7);
+    // シール枚数のDBをロード（なければ4種を1枚で初期化）
+    await _countStore.loadOrInit(defaultCount: 1);
+    // // シール枚数のDBをロード（開発中: 強制的に0枚スタートにリセット）
+    // await _countStore.loadOrInit(defaultCount: 0, forceReset: true);
+    _counts = Map<String, int>.from(_countStore.counts);
+    _rebuildInventoryFromCounts();
+
     setState(() {
-      if (data != null) {
-        _inventorySlots = List<String?>.from(data.inventorySlots);
-        _placedByPage = data.placedByPage
-            .map((page) => List<PlacedSticker>.from(page))
-            .toList();
-      } else {
-        // 初期データを設定
-        _inventorySlots = List<String?>.generate(_inventorySize, (index) {
-          if (index < _glbAssets.length) return _glbAssets[index];
-          return null;
-        });
-        _placedByPage = List.generate(_pageCount, (_) => <PlacedSticker>[]);
-      }
       _isLoading = false;
     });
+  }
+
+  void _rebuildInventoryFromCounts() {
+    _inventorySlots = _catalog
+        .map((s) => (_counts[s.assetPath] ?? 0) > 0 ? s.assetPath : null)
+        .toList(growable: false);
   }
 
   /// データを保存する

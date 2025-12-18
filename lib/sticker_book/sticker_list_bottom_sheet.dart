@@ -16,6 +16,7 @@ class StickerListBottomSheet extends StatelessWidget {
     required this.inventorySlots,
     required this.onTapSticker,
     required this.onDropSticker,
+    this.displayAssetResolver,
   });
 
   final List<String> categories;
@@ -23,7 +24,9 @@ class StickerListBottomSheet extends StatelessWidget {
   final ValueChanged<int> onCategorySelected;
   final List<String?> inventorySlots;
   final void Function(String asset, int slotIndex) onTapSticker;
-  final void Function(InventoryPayload payload, Offset globalPosition) onDropSticker;
+  final void Function(InventoryPayload payload, Offset globalPosition)
+  onDropSticker;
+  final String Function(String assetPath)? displayAssetResolver;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +65,7 @@ class StickerListBottomSheet extends StatelessWidget {
                     );
                   },
                   onDropSticker: onDropSticker,
+                  displayAssetResolver: displayAssetResolver,
                 ),
               ),
             ],
@@ -114,6 +118,7 @@ class _StickerGridArea extends StatelessWidget {
     required this.onTapSticker,
     required this.onShowDetail,
     required this.onDropSticker,
+    this.displayAssetResolver,
   });
 
   final ScrollController scrollController;
@@ -121,6 +126,7 @@ class _StickerGridArea extends StatelessWidget {
   final void Function(String asset, int slotIndex) onTapSticker;
   final void Function(String assetPath) onShowDetail;
   final void Function(InventoryPayload payload, Offset globalPosition) onDropSticker;
+  final String Function(String assetPath)? displayAssetResolver;
 
   @override
   Widget build(BuildContext context) {
@@ -147,8 +153,12 @@ class _StickerGridArea extends StatelessWidget {
           itemCount: visibleStickers.length,
           itemBuilder: (context, index) {
             final asset = visibleStickers[index];
+            final displayAsset = (asset != null && displayAssetResolver != null)
+                ? displayAssetResolver!(asset)
+                : asset;
             return _InventoryStickerTile(
               assetPath: asset,
+              displayAssetPath: displayAsset,
               slotIndex: index,
               onTap: asset != null ? () => onShowDetail(asset) : null,
               onDropSticker: onDropSticker,
@@ -163,12 +173,14 @@ class _StickerGridArea extends StatelessWidget {
 class _InventoryStickerTile extends StatefulWidget {
   const _InventoryStickerTile({
     required this.assetPath,
+    this.displayAssetPath,
     required this.slotIndex,
     required this.onTap,
     required this.onDropSticker,
   });
 
   final String? assetPath;
+  final String? displayAssetPath; // 表示用（サムネイル等）。未指定なら assetPath
   final int slotIndex;
   final VoidCallback? onTap;
   final void Function(InventoryPayload payload, Offset globalPosition) onDropSticker;
@@ -224,11 +236,12 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
       return const _EmptySlot();
     }
 
-    final assetPath = widget.assetPath!;
-    final isGlb = assetPath.toLowerCase().endsWith('.glb');
+    final assetPath = widget.assetPath!; // 本体（配置に使う）
+    final tileAssetPath = widget.displayAssetPath ?? assetPath; // 表示に使う
+    final isGlb = tileAssetPath.toLowerCase().endsWith('.glb');
 
     final tile = StickerTile(
-      assetPath: assetPath,
+      assetPath: tileAssetPath,
       forceStaticImage: false,
       useModelViewer: isGlb,
     );
@@ -240,7 +253,7 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
         if (_isDragging) return;
         HapticFeedback.lightImpact();
         setState(() => _isDragging = true);
-        _showOverlay(context, assetPath, details.globalPosition);
+        _showOverlay(context, tileAssetPath, details.globalPosition);
       },
       onLongPressMoveUpdate: (details) {
         if (_overlayEntry == null) return;
@@ -248,16 +261,16 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
         _overlayEntry!.markNeedsBuild();
       },
       onLongPressEnd: (details) {
-        final payload = InventoryPayload(asset: assetPath, slotIndex: widget.slotIndex);
+        final payload = InventoryPayload(
+          asset: assetPath,
+          slotIndex: widget.slotIndex,
+        );
         final dropPosition = details.globalPosition;
         _removeOverlay();
         setState(() {});
         widget.onDropSticker(payload, dropPosition);
       },
-      child: Opacity(
-        opacity: _isDragging ? 0.5 : 1,
-        child: tile,
-      ),
+      child: Opacity(opacity: _isDragging ? 0.5 : 1, child: tile),
     );
   }
 }
@@ -274,10 +287,7 @@ class _EmptySlot extends StatelessWidget {
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       alignment: Alignment.center,
-      child: const Icon(
-        Icons.add,
-        color: Color(0xFFCBD5E1),
-      ),
+      child: const Icon(Icons.add, color: Color(0xFFCBD5E1)),
     );
   }
 }
