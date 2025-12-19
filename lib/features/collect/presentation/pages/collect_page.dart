@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../gacha/presentation/pages/gacha_page.dart';
-import '../../../trade/presentation/pages/trade_menu_page.dart';
+import '../../../../features/sticker_book/presentation/pages/trade_menu_page.dart';
 
 class CollectPage extends StatelessWidget {
   const CollectPage({super.key});
@@ -23,15 +23,7 @@ class CollectPage extends StatelessWidget {
                 );
               },
             ),
-            // Container(
-            //   width: 4,
-            //   height: 4,
-            //   decoration: const BoxDecoration(
-            //     color: Color(0xFFC6845A),
-            //     shape: BoxShape.circle,
-            //   ),
-            // ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 12),
             _CollectButton(
               label: '交換であつめる',
               onPressed: () {

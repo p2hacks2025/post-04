@@ -1,0 +1,253 @@
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../data/services/sticker_count_store.dart';
+// stickerMasterData と StickerData クラスが入っているファイルをインポート
+import '../../../../features/sticker_book/data/sticker_master.dart';
+
+class PasswordGeneratePage extends StatefulWidget {
+  const PasswordGeneratePage({super.key});
+
+  @override
+  State<PasswordGeneratePage> createState() => _PasswordGeneratePageState();
+}
+
+class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
+  late final StickerCountStore _countStore;
+  bool _isStoreReady = false;
+
+  // ★修正箇所: ここを StickerData に変更
+  StickerData? _selectedSticker;
+
+  String? _generatedPassword;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _countStore = StickerCountStore(
+      stickerMasterData.map((e) => e.assetPath).toList(),
+    );
+    _initStore();
+  }
+
+  Future<void> _initStore() async {
+    await _countStore.loadOrInit();
+    if (mounted) {
+      setState(() {
+        _isStoreReady = true;
+      });
+    }
+  }
+
+  // ★修正箇所: ここも StickerData に変更
+  List<StickerData> get _ownedStickers {
+    if (!_isStoreReady) return [];
+    return stickerMasterData.where((sticker) {
+      return _countStore.getCount(sticker.assetPath) > 0;
+    }).toList();
+  }
+
+  Future<void> _generateAndSave() async {
+    if (_selectedSticker == null) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final targetSticker = _selectedSticker!;
+
+    try {
+      await _countStore.dec(targetSticker.assetPath);
+
+      final random = Random();
+      final newPassword = (1000 + random.nextInt(9000)).toString();
+
+      await FirebaseFirestore.instance.collection('trades').add({
+        'password': newPassword,
+        'sticker_id': targetSticker.assetPath,
+        'created_at': FieldValue.serverTimestamp(),
+      });
+
+      setState(() {
+        _generatedPassword = newPassword;
+      });
+
+    } catch (e) {
+      await _countStore.inc(targetSticker.assetPath);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('エラーが発生しました: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_isStoreReady) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (_generatedPassword != null) {
+      return _buildResultView();
+    }
+
+    return _buildSelectionView();
+  }
+
+  Widget _buildSelectionView() {
+    final stickers = _ownedStickers;
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('あげるシールを選ぶ')),
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              '持っているシールから選んでください。\n発行すると手持ちが1枚減ります。',
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Expanded(
+            child: stickers.isEmpty
+                ? const Center(child: Text('あげられるシールがありません...'))
+                : GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
+                    itemCount: stickers.length,
+                    itemBuilder: (context, index) {
+                      final sticker = stickers[index];
+                      final isSelected = _selectedSticker == sticker;
+                      final count = _countStore.getCount(sticker.assetPath);
+
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedSticker = sticker;
+                          });
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: isSelected
+                                ? Border.all(color: Colors.orange, width: 4)
+                                : Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Stack(
+                            children: [
+                              Positioned.fill(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Image.asset(
+                                    sticker.assetPath,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                right: 4,
+                                bottom: 4,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black54,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '×$count',
+                                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                                  ),
+                                ),
+                              ),
+                              if (isSelected)
+                                const Center(
+                                  child: Icon(Icons.check_circle, color: Colors.orange, size: 40),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: (_selectedSticker == null || _isLoading)
+                    ? null
+                    : _generateAndSave,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('あいことばを発行する', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultView() {
+    return Scaffold(
+      appBar: AppBar(title: const Text('発行完了')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_selectedSticker != null)
+              SizedBox(
+                height: 100,
+                child: Image.asset(_selectedSticker!.assetPath),
+              ),
+            const SizedBox(height: 20),
+            const Text('あなたのあいことば', style: TextStyle(fontSize: 20)),
+            const SizedBox(height: 10),
+            Text(
+              _generatedPassword!,
+              style: const TextStyle(
+                fontSize: 60,
+                fontWeight: FontWeight.bold,
+                color: Colors.orange,
+                letterSpacing: 8,
+              ),
+            ),
+            const SizedBox(height: 30),
+            const Text(
+              '友達にこの番号を入力してもらってください。\n（あなたの在庫は既に減っています）',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 50),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('メニューに戻る'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
