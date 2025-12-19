@@ -8,6 +8,7 @@ import 'core/widgets/navigation_bar.dart';
 import 'features/collect/presentation/pages/collect_page.dart';
 import 'features/settings/presentation/pages/settings_page.dart';
 import 'features/sticker_book/presentation/pages/sticker_book_page.dart';
+import 'features/timeline/presentation/pages/timeline_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,7 +52,7 @@ class _MainScreenState extends State<MainScreen> {
   // ↓↓↓ 修正箇所: リストの2番目を TradeMenuPage に変更
   List<Widget> get _pages => [
     StickerBookPage(key: _stickerBookKey),
-    const Center(child: Text('みんなの', style: TextStyle(fontSize: 24))),
+    const TimelinePage(),
     const CollectPage(),
     const SettingsPage(),
   ];

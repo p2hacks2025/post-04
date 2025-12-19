@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../domain/models/models.dart';
 import '../../domain/constants/nameplate_constants.dart';
+import '../../data/repositories/nameplate_storage.dart';
 import '../../data/services/nameplate_save_service.dart';
 import '../widgets/nameplate_preview.dart';
 import '../widgets/nameplate_tabs.dart';
@@ -25,6 +26,20 @@ class _NameplateEditorPageState extends State<NameplateEditorPage> {
     hasShadow: true,
     decorations: [],
   );
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedNameplate();
+  }
+
+  Future<void> _loadSavedNameplate() async {
+    final saved = await NameplateStorage.load();
+    if (!mounted) return;
+    if (saved != null) {
+      setState(() => _nameplateData = saved);
+    }
+  }
 
   void _updateNameplate(NameplateData newData) {
     setState(() {
@@ -58,12 +73,13 @@ class _NameplateEditorPageState extends State<NameplateEditorPage> {
     }
 
     final success = await NameplateSaveService.saveImage(_previewKey);
+    await NameplateStorage.save(_nameplateData);
 
     if (mounted) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(success ? '保存しました！' : '保存に失敗しました'),
+          content: Text(success ? '保存しました！' : '保存に失敗しました（ネームプレート設定は保存済み）'),
           backgroundColor: success ? NameplateColors.accentSuccess : Colors.red,
         ),
       );

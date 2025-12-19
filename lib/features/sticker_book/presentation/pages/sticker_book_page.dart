@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../domain/models/models.dart';
 import '../../data/repositories/sticker_book_data.dart';
@@ -6,6 +7,12 @@ import '../../data/services/sticker_count_store.dart';
 import '../../data/sticker_master.dart';
 import '../widgets/sticker_book_pager.dart';
 import '../widgets/sticker_list_bottom_sheet.dart';
+
+import '../../../nameplate/data/repositories/nameplate_storage.dart';
+import '../../../nameplate/domain/constants/nameplate_constants.dart';
+import '../../../nameplate/domain/models/models.dart' as np;
+import '../../../timeline/data/repositories/public_board_repository.dart';
+import '../../../timeline/domain/models/public_board.dart';
 
 class StickerBookPage extends StatefulWidget {
   const StickerBookPage({super.key});
@@ -38,6 +45,10 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
 
   final PageController _pageController = PageController();
 
+  final PublicBoardRepository _publicRepo = PublicBoardRepository();
+  Set<int> _publishedPages = <int>{};
+  int _currentPage = 0;
+
   static const int _inventorySize = 20;
   static const int _pageCount = 4;
 
@@ -53,12 +64,21 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initializePageCollections();
+    _pageController.addListener(_onPageChanged);
     _loadData();
+  }
+
+  void _onPageChanged() {
+    final p = (_pageController.page ?? 0).round().clamp(0, _boardKeys.length - 1);
+    if (p != _currentPage && mounted) {
+      setState(() => _currentPage = p);
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _pageController.removeListener(_onPageChanged);
     _pageController.dispose();
     // アプリ終了前にデータを保存
     _saveData();
@@ -101,6 +121,8 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       );
     }
     
+    final published = _publishedPages.contains(_currentPage);
+
     return Stack(
       children: [
         Column(
@@ -140,6 +162,23 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
           onTapSticker: _handleStickerTap,
           onDropSticker: _handleDropFromList,
           displayAssetResolver: (asset) => _iconByAsset[asset] ?? asset,
+        ),
+
+        Positioned(
+          top: 12,
+          right: 12,
+          child: SafeArea(
+            child: ElevatedButton.icon(
+              onPressed: _togglePublishDialog,
+              icon: Icon(published ? Icons.public : Icons.lock),
+              label: Text(published ? '公開中' : '公開'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: published ? Colors.green : const Color(0xFFC6845A),
+                foregroundColor: Colors.white,
+                shape: const StadiumBorder(),
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -211,6 +250,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       _selectedStickerId = sticker.id;
     });
     _saveData();
+    await _syncIfPublished(page);
   }
 
   void _updateSticker(
@@ -243,6 +283,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       }
     });
     _saveData();
+    _syncIfPublished(page);
   }
 
   void _selectSticker(String id) {
@@ -266,6 +307,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       }
     });
     _saveData();
+    await _syncIfPublished(page);
   }
 
   void _initializePageCollections() {
@@ -301,9 +343,124 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     _counts = Map<String, int>.from(_countStore.counts);
     _rebuildInventoryFromCounts();
 
+    await _loadPublishedPages();
+
     setState(() {
       _isLoading = false;
     });
+  }
+
+  Future<void> _loadPublishedPages() async {
+    // 未ログインの可能性はほぼ無いが、念のため
+    if (FirebaseAuth.instance.currentUser == null) return;
+    final pages = await _publicRepo.fetchMyPublishedPages();
+    if (!mounted) return;
+    setState(() => _publishedPages = pages);
+  }
+
+  Future<np.NameplateData> _loadMyNameplateOrDefault() async {
+    final saved = await NameplateStorage.load();
+    if (saved != null) return saved;
+    return np.NameplateData(
+      shape: np.NameplateShape.roundedSquare,
+      backgroundColor: NameplateColors.backgroundColors[0],
+      name: '',
+      fontType: np.FontType.rounded,
+      textColor: const Color(0xFFFF6FAE),
+      hasOutline: true,
+      hasShadow: true,
+      decorations: const [],
+    );
+  }
+
+  Future<void> _togglePublishDialog() async {
+    final page = _currentPage;
+    final now = _publishedPages.contains(page);
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('公開設定'),
+          content: Text(
+            now
+                ? 'このページは公開中です。\n非公開にすると、データベースから削除されます。'
+                : 'このページを公開しますか？\n公開すると「みんなの」に表示されます。',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('キャンセル'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                if (now) {
+                  await _unpublish(page);
+                } else {
+                  await _publish(page);
+                }
+              },
+              child: Text(now ? '非公開にする' : '公開する'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _publish(int page) async {
+    final key = _boardKeys[page];
+    final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('公開に失敗しました（台紙サイズ取得不可）')));
+      }
+      return;
+    }
+
+    final boardSize = renderBox.size;
+    final gradient = _boardGradients[page % _boardGradients.length];
+    final nameplate = await _loadMyNameplateOrDefault();
+
+    // 画像/バイナリは一切アップロードしない: アセット参照 + 座標のみ
+    final stickers = _placedByPage[page]
+        .map(
+          (s) => PublicPlacedSticker(
+            asset: s.asset,
+            dx: s.position.dx,
+            dy: s.position.dy,
+            rotation: s.rotation,
+          ),
+        )
+        .toList(growable: false);
+
+    final snapshot = PublicBoardSnapshot(
+      gradientArgb: gradient.map((c) => c.toARGB32()).toList(growable: false),
+      boardWidth: boardSize.width,
+      boardHeight: boardSize.height,
+      stickers: stickers,
+    );
+
+    await _publicRepo.publishPage(page: page, nameplate: nameplate, board: snapshot);
+
+    if (!mounted) return;
+    setState(() => _publishedPages = {..._publishedPages, page});
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('公開しました')));
+  }
+
+  Future<void> _unpublish(int page) async {
+    await _publicRepo.unpublishPage(page: page);
+    if (!mounted) return;
+    setState(() => _publishedPages = _publishedPages.where((p) => p != page).toSet());
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('非公開にしました（DBから削除）')));
+  }
+
+  Future<void> _syncIfPublished(int page) async {
+    if (!_publishedPages.contains(page)) return;
+    if (page != _currentPage) return;
+    await _publish(page);
   }
 
   void _rebuildInventoryFromCounts() {
