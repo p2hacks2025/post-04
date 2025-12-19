@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'core/constants/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/navigation_bar.dart';
@@ -7,7 +9,13 @@ import 'features/collect/presentation/pages/collect_page.dart';
 import 'features/settings/presentation/pages/settings_page.dart';
 import 'features/sticker_book/presentation/pages/sticker_book_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // ↓↓↓ 追加：アプリ起動時に匿名ログインしてしまう
+  await FirebaseAuth.instance.signInAnonymously();
+  // ↑↑↑ これだけで「認証済みユーザー」になれます
   runApp(const MyApp());
 }
 
@@ -37,8 +45,10 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  final GlobalKey<State<StickerBookPage>> _stickerBookKey = GlobalKey<State<StickerBookPage>>();
+  final GlobalKey<State<StickerBookPage>> _stickerBookKey =
+      GlobalKey<State<StickerBookPage>>();
 
+  // ↓↓↓ 修正箇所: リストの2番目を TradeMenuPage に変更
   List<Widget> get _pages => [
     StickerBookPage(key: _stickerBookKey),
     const Center(child: Text('みんなの', style: TextStyle(fontSize: 24))),
@@ -65,6 +75,7 @@ class _MainScreenState extends State<MainScreen> {
                   setState(() {
                     _selectedIndex = index;
                   });
+                  // ステッカーブックに戻った時のリロード処理
                   if (index == 0 && previousIndex != 0) {
                     final state = _stickerBookKey.currentState;
                     if (state != null) {
