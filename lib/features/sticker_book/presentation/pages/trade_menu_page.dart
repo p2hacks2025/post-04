@@ -56,12 +56,6 @@ class TradeMenuPage extends StatelessWidget {
               },
             ),
 
-            // ↓↓↓ 自分のUIDを表示するエリア（デバッグ・開発用） ↓↓↓
-            const SizedBox(height: 60),
-            Text(
-              'Your UID (長押しでコピー):',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            ),
             const SizedBox(height: 4),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),

@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/services/sticker_count_store.dart';
 // stickerMasterData と StickerData クラスが入っているファイルをインポート
 import '../../../../features/sticker_book/data/sticker_master.dart';
+import '../widgets/sticker_tile.dart';
 
 class PasswordGeneratePage extends StatefulWidget {
   const PasswordGeneratePage({super.key});
@@ -152,9 +153,11 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
                               Positioned.fill(
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: Image.asset(
-                                    sticker.assetPath,
-                                    fit: BoxFit.contain,
+                                  child: StickerTile(
+                                    assetPath: sticker.iconPath,
+                                    showShadow: false,
+                                    forceStaticImage: true,
+                                    useModelViewer: false,
                                   ),
                                 ),
                               ),
@@ -218,7 +221,13 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
             if (_selectedSticker != null)
               SizedBox(
                 height: 100,
-                child: Image.asset(_selectedSticker!.assetPath),
+                child: StickerTile(
+                  assetPath: _selectedSticker!.iconPath,
+                  size: 100,
+                  showShadow: false,
+                  forceStaticImage: true,
+                  useModelViewer: false,
+                ),
               ),
             const SizedBox(height: 20),
             const Text('あなたのあいことば', style: TextStyle(fontSize: 20)),
@@ -234,7 +243,7 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
             ),
             const SizedBox(height: 30),
             const Text(
-              '友達にこの番号を入力してもらってください。\n（あなたの在庫は既に減っています）',
+              '友達にこの番号を入力してもらってください。\n（あなたのシールは既になくなっています）',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey),
             ),
@@ -243,7 +252,7 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('メニューに戻る'),
+              child: const Text('元の画面に戻る'),
             ),
           ],
         ),

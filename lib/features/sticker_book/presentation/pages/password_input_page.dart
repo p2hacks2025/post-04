@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// ↓↓↓ あなたのプロジェクトのパスに合わせて修正してください
-import '../../../sticker_book/data/services/sticker_count_store.dart';
 import '../../data/sticker_master.dart';
+import '../../data/services/sticker_count_store.dart';
+import '../widgets/sticker_tile.dart';
 
 class PasswordInputPage extends StatefulWidget {
   const PasswordInputPage({super.key});
@@ -32,12 +32,26 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
     _initStore();
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> _initStore() async {
     await _countStore.loadOrInit();
     if (mounted) {
       setState(() {
         _isStoreReady = true;
       });
+    }
+  }
+
+  StickerData? _findStickerByAssetPath(String assetPath) {
+    try {
+      return stickerMasterData.firstWhere((e) => e.assetPath == assetPath);
+    } catch (_) {
+      return null;
     }
   }
 
@@ -71,7 +85,18 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
       
       // 保存されているシールのID（assetPath）を取得
       // ※ 保存側で 'sticker_id' というキーで保存している前提
-      final String assetPath = data['sticker_id']; 
+      final String? assetPath = (data['sticker_id'] as String?)?.trim();
+
+      if (assetPath == null || assetPath.isEmpty) {
+        setState(() {
+          _statusMessage = '受け取るシール情報が不正です';
+        });
+        return;
+      }
+
+      final sticker = _findStickerByAssetPath(assetPath);
+      final displayName = sticker?.name ?? 'シール';
+      final displayPath = sticker?.iconPath ?? assetPath;
 
       // 3. 自分のシール帳に +1 する
       await _countStore.inc(assetPath);
@@ -92,10 +117,18 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
             children: [
               const Icon(Icons.check_circle, color: Colors.green, size: 60),
               const SizedBox(height: 12),
-              const Text('シールを受け取りました！'),
+              Text('「$displayName」を受け取りました！'),
+              const SizedBox(height: 12),
+              Center(
+                child: StickerTile(
+                  assetPath: displayPath,
+                  size: 140,
+                  showShadow: false,
+                  forceStaticImage: true,
+                  useModelViewer: false,
+                ),
+              ),
               const SizedBox(height: 8),
-              // 本当はここでstickerMasterから画像を引いて表示するとリッチです
-              Text('ID: $assetPath', style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ],
           ),
           actions: [
