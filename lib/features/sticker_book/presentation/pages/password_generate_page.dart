@@ -6,6 +6,7 @@ import '../../data/services/sticker_count_store.dart';
 // stickerMasterData と StickerData クラスが入っているファイルをインポート
 import '../../../../features/sticker_book/data/sticker_master.dart';
 import '../widgets/sticker_tile.dart';
+import '../../../../../core/utils/error_handler.dart';
 
 class PasswordGeneratePage extends StatefulWidget {
   const PasswordGeneratePage({super.key});
@@ -76,11 +77,14 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
       });
 
     } catch (e) {
+      // エラーが発生した場合、シールを戻す
       await _countStore.inc(targetSticker.assetPath);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラーが発生しました: $e')),
+        ErrorHandler.showErrorSnackBar(
+          context,
+          e,
+          onRetry: () => _generateAndSave(),
         );
       }
     } finally {

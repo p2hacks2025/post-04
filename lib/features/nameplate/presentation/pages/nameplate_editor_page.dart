@@ -5,6 +5,7 @@ import '../../domain/constants/nameplate_constants.dart';
 import '../../data/services/nameplate_save_service.dart';
 import '../widgets/nameplate_preview.dart';
 import '../widgets/nameplate_tabs.dart';
+import '../../../../core/utils/error_handler.dart';
 
 class NameplateEditorPage extends StatefulWidget {
   const NameplateEditorPage({super.key});
@@ -57,16 +58,25 @@ class _NameplateEditorPageState extends State<NameplateEditorPage> {
       );
     }
 
-    final success = await NameplateSaveService.saveImage(_previewKey);
+    try {
+      final success = await NameplateSaveService.saveImage(_previewKey);
 
-    if (mounted) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(success ? '保存しました！' : '保存に失敗しました'),
-          backgroundColor: success ? NameplateColors.accentSuccess : Colors.red,
-        ),
-      );
+      if (mounted) {
+        Navigator.of(context).pop();
+        if (success) {
+          ErrorHandler.showSuccessSnackBar(context, 'ネームプレートを保存しました！');
+        } else {
+          ErrorHandler.showErrorSnackBar(
+            context,
+            '保存に失敗しました。写真ライブラリへのアクセス権限を確認してください。',
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop();
+        ErrorHandler.showErrorSnackBar(context, e);
+      }
     }
   }
 
@@ -111,9 +121,9 @@ class _NameplateEditorPageState extends State<NameplateEditorPage> {
                 16;
             final availableForTabs =
                 (constraints.maxHeight - estimatedPreviewHeight - 24).clamp(
-                      280.0,
-                      constraints.maxHeight * 0.7,
-                    );
+                  280.0,
+                  constraints.maxHeight * 0.7,
+                );
 
             return SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 16),

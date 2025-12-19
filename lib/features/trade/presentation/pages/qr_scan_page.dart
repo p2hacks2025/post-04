@@ -5,6 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../sticker_book/data/sticker_master.dart';
 import '../../../sticker_book/data/services/sticker_count_store.dart';
+import '../../../../core/utils/error_handler.dart';
 
 class QrScanPage extends StatefulWidget {
   const QrScanPage({super.key});
@@ -74,9 +75,10 @@ class _QrScanPageState extends State<QrScanPage> {
       }
     } catch (e) {
       // JSONじゃなかった場合などのエラー
-      ScaffoldMessenger.of(
+      ErrorHandler.showWarningSnackBar(
         context,
-      ).showSnackBar(const SnackBar(content: Text('シールのQRコードではありません')));
+        'シールのQRコードではありません\nもう一度スキャンしてください',
+      );
       setState(() => _isScanned = false); // ロック解除して再スキャン可能に
     }
   }

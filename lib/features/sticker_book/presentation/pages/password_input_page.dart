@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/sticker_master.dart';
 import '../../data/services/sticker_count_store.dart';
 import '../widgets/sticker_tile.dart';
+import '../../../../../core/utils/error_handler.dart';
 
 class PasswordInputPage extends StatefulWidget {
   const PasswordInputPage({super.key});
@@ -14,7 +15,7 @@ class PasswordInputPage extends StatefulWidget {
 
 class _PasswordInputPageState extends State<PasswordInputPage> {
   final TextEditingController _controller = TextEditingController();
-  
+
   // シール管理用ストア
   late final StickerCountStore _countStore;
   bool _isStoreReady = false;
@@ -57,8 +58,17 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
 
   // あいことば検索 ＆ 受取処理
   Future<void> _searchAndReceive() async {
-    final inputPassword = _controller.text;
-    if (inputPassword.isEmpty) return;
+    final inputPassword = _controller.text.trim();
+    if (inputPassword.isEmpty) {
+      ErrorHandler.showWarningSnackBar(context, 'あいことばを入力してください');
+      return;
+    }
+
+    // 4桁の数字チェック
+    if (!RegExp(r'^\d{4}$').hasMatch(inputPassword)) {
+      ErrorHandler.showWarningSnackBar(context, 'あいことばは4桁の数字です');
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -74,23 +84,28 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
 
       if (snapshot.docs.isEmpty) {
         setState(() {
-          _statusMessage = 'そのあいことばは見つかりませんでした...';
+          _statusMessage = null;
         });
+        ErrorHandler.showWarningSnackBar(
+          context,
+          'そのあいことばは見つかりませんでした\nもう一度確認してください',
+        );
         return;
       }
 
       // 見つかったデータを取り出す
       final doc = snapshot.docs.first;
       final data = doc.data();
-      
+
       // 保存されているシールのID（assetPath）を取得
       // ※ 保存側で 'sticker_id' というキーで保存している前提
       final String? assetPath = (data['sticker_id'] as String?)?.trim();
 
       if (assetPath == null || assetPath.isEmpty) {
         setState(() {
-          _statusMessage = '受け取るシール情報が不正です';
+          _statusMessage = null;
         });
+        ErrorHandler.showErrorSnackBar(context, 'あいことばは使用済みか無効です');
         return;
       }
 
@@ -102,7 +117,11 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
       await _countStore.inc(assetPath);
 
       // 4. Firestoreからデータを削除する（「使用済み」にするため）
-      await doc.reference.delete();
+      try {
+        await doc.reference.delete();
+      } catch (deleteError) {
+        debugPrint('Trade削除エラー: $deleteError');
+      }
 
       if (!mounted) return;
 
@@ -142,11 +161,15 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
           ],
         ),
       );
-
     } catch (e) {
       setState(() {
-        _statusMessage = 'エラーが発生しました: $e';
+        _statusMessage = null;
       });
+      ErrorHandler.showErrorSnackBar(
+        context,
+        e,
+        onRetry: () => _searchAndReceive(),
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -170,12 +193,9 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              '友達から聞いた番号を入力してね',
-              style: TextStyle(fontSize: 16),
-            ),
+            const Text('友達から聞いた番号を入力してね', style: TextStyle(fontSize: 16)),
             const SizedBox(height: 20),
-            
+
             TextField(
               controller: _controller,
               keyboardType: TextInputType.number,
@@ -198,17 +218,14 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
                 icon: const Icon(Icons.download),
                 label: const Text('シールを受け取る'),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 15,
+                  ),
                 ),
               ),
 
             const SizedBox(height: 20),
-
-            if (_statusMessage != null)
-              Text(
-                _statusMessage!,
-                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-              ),
           ],
         ),
       ),
