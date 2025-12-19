@@ -6,6 +6,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../../sticker_book/data/sticker_master.dart';
 import '../../../sticker_book/data/services/sticker_count_store.dart';
 import '../../../../core/utils/error_handler.dart';
+import '../../../../core/constants/app_colors.dart';
 
 class QrScanPage extends StatefulWidget {
   const QrScanPage({super.key});
@@ -98,7 +99,7 @@ class _QrScanPageState extends State<QrScanPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 60),
+            const Icon(Icons.check_circle, color: AppColors.success, size: 60),
             const SizedBox(height: 12),
             Text('「$name」を受け取りました！'),
             const SizedBox(height: 12),
@@ -145,7 +146,7 @@ class _QrScanPageState extends State<QrScanPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: const [
-            Icon(Icons.remove_circle, color: Colors.redAccent, size: 60),
+            Icon(Icons.remove_circle, color: AppColors.error, size: 60),
             SizedBox(height: 12),
             Text('相手の確認QRを受け取りました。\n在庫を1つ減らしました。', textAlign: TextAlign.center),
           ],

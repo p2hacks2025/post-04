@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
 
 import '../../../sticker_book/data/sticker_master.dart';
 import '../../../sticker_book/data/services/sticker_count_store.dart';
@@ -105,7 +106,7 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
 
     return Scaffold(
       appBar: AppBar(title: const Text('ガチャ')),
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: AppColors.background,
       body: Center(
         child: Stack(
           alignment: Alignment.center,
@@ -130,25 +131,28 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(24),
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFFFD9A8), Color(0xFFFFBBD1)],
+                          colors: [
+                            AppColors.gachaBoxGradientStart,
+                            AppColors.gachaBoxGradientEnd,
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.pinkAccent.withValues(alpha: glowAlpha),
+                            color: AppColors.gachaGlow.withValues(alpha: glowAlpha),
                             blurRadius: 30 * glowAlpha,
                             spreadRadius: 6 * glowAlpha,
                           ),
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.10),
+                            color: AppColors.shadow,
                             blurRadius: 12,
                             offset: const Offset(0, 6),
                           ),
                         ],
                       ),
                       child: const Center(
-                        child: Icon(Icons.card_giftcard, size: 64, color: Color(0xFF8A4F34)),
+                        child: Icon(Icons.card_giftcard, size: 64, color: AppColors.primaryDark),
                       ),
                     ),
                   ),
@@ -176,8 +180,8 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
           child: ElevatedButton(
             onPressed: isAnimating ? null : _startGacha,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFC6845A),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.primary,
+              foregroundColor: AppColors.textOnPrimary,
               shape: const StadiumBorder(),
               padding: const EdgeInsets.symmetric(vertical: 14),
               textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
@@ -212,16 +216,16 @@ class _ResultCard extends StatelessWidget {
     final isGlb = displayPath.toLowerCase().endsWith('.glb');
 
     return Material(
-      color: Colors.black26,
+      color: AppColors.shadowDark,
       child: Center(
         child: Container(
           width: 320,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 20, spreadRadius: 4),
+              BoxShadow(color: AppColors.shadowDark, blurRadius: 20, spreadRadius: 4),
             ],
           ),
           child: Column(
@@ -234,13 +238,13 @@ class _ResultCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isNew ? const Color(0xFFFFE8D9) : const Color(0xFFE6FFFB),
+                  color: isNew ? AppColors.primaryLight : AppColors.successLight,
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   isNew ? 'New!' : 'もってるかず: $ownedCountまい',
                   style: TextStyle(
-                    color: isNew ? const Color(0xFFB85B2A) : const Color(0xFF0F766E),
+                    color: isNew ? AppColors.primaryDark : AppColors.success,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -252,7 +256,7 @@ class _ResultCard extends StatelessWidget {
                   OutlinedButton(onPressed: onClose, child: const Text('とじる')),
                   ElevatedButton(
                     onPressed: onAgain,
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC6845A)),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
                     child: const Text('もう一回'),
                   ),
                 ],
