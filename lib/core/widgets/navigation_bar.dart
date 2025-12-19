@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../constants/app_colors.dart';
 
 class CustomNavigationBar extends StatelessWidget {
   const CustomNavigationBar({
@@ -16,11 +17,11 @@ class CustomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: AppColors.shadow,
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -126,8 +127,8 @@ class _NavItemState extends State<_NavItem>
   @override
   Widget build(BuildContext context) {
     final Color labelColor = widget.isSelected
-        ? const Color(0xFFC6845A)
-        : const Color(0xFFC6845A).withValues(alpha: 0.5);
+        ? AppColors.primary
+        : AppColors.primary.withValues(alpha: 0.5);
 
     return GestureDetector(
       onTap: _handleTap,

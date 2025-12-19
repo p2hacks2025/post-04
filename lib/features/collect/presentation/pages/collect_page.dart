@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
 
 import '../../../gacha/presentation/pages/gacha_page.dart';
 import '../../../../features/sticker_book/presentation/pages/trade_menu_page.dart';
@@ -9,7 +10,7 @@ class CollectPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8F0),
+      backgroundColor: AppColors.background,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -53,8 +54,8 @@ class _CollectButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFC6845A),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.textOnPrimary,
         shape: const StadiumBorder(),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         elevation: 0,

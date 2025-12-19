@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_colors.dart';
 
 class GridBackground extends StatelessWidget {
   const GridBackground({super.key});
@@ -16,8 +17,8 @@ class _GridBackgroundPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     const double step = 24;
     final paint = Paint()
-      ..color = const Color(0xFFD9DDE3)
-      ..strokeWidth = 1;
+      ..color = AppColors.gridLine
+      ..strokeWidth = 1.0;
 
     final double width = size.width;
     final double height = size.height;

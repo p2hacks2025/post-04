@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../constants/app_colors.dart';
 
 class ErrorHandler {
   static String getErrorMessage(dynamic error) {
@@ -121,7 +122,7 @@ class ErrorHandler {
             ),
           ],
         ),
-        backgroundColor: Colors.red[600],
+        backgroundColor: AppColors.errorSnackBar,
         duration: duration,
         action: onRetry != null
             ? SnackBarAction(
@@ -151,7 +152,7 @@ class ErrorHandler {
             ),
           ],
         ),
-        backgroundColor: Colors.green[600],
+        backgroundColor: AppColors.successSnackBar,
         duration: duration,
       ),
     );
@@ -174,7 +175,7 @@ class ErrorHandler {
             ),
           ],
         ),
-        backgroundColor: Colors.blue[600],
+        backgroundColor: AppColors.infoSnackBar,
         duration: duration,
       ),
     );
@@ -197,7 +198,7 @@ class ErrorHandler {
             ),
           ],
         ),
-        backgroundColor: Colors.orange[600],
+        backgroundColor: AppColors.warningSnackBar,
         duration: duration,
       ),
     );

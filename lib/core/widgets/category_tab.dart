@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/constants/app_colors.dart';
 
 class CategoryTab extends StatelessWidget {
   const CategoryTab({
@@ -21,28 +22,22 @@ class CategoryTab extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFFE8D9) : const Color(0xFFF1F5F9),
+          color: isSelected ? AppColors.categorySelected : AppColors.categoryUnselected,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(12),
             topRight: Radius.circular(12),
           ),
           border: Border(
             top: BorderSide(
-              color: isSelected
-                  ? const Color(0xFFC6845A)
-                  : const Color(0xFFCBD5E1),
+              color: isSelected ? AppColors.primary : AppColors.categoryBorder,
               width: 2,
             ),
             left: BorderSide(
-              color: isSelected
-                  ? const Color(0xFFC6845A)
-                  : const Color(0xFFCBD5E1),
+              color: isSelected ? AppColors.primary : AppColors.categoryBorder,
               width: 2,
             ),
             right: BorderSide(
-              color: isSelected
-                  ? const Color(0xFFC6845A)
-                  : const Color(0xFFCBD5E1),
+              color: isSelected ? AppColors.primary : AppColors.categoryBorder,
               width: 2,
             ),
           ),
@@ -50,9 +45,7 @@ class CategoryTab extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected
-                ? const Color(0xFFC6845A)
-                : const Color(0xFF334155),
+            color: isSelected ? AppColors.primary : AppColors.textPrimary,
             fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
           ),
         ),

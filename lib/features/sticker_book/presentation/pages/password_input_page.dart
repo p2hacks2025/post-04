@@ -5,6 +5,7 @@ import '../../data/sticker_master.dart';
 import '../../data/services/sticker_count_store.dart';
 import '../widgets/sticker_tile.dart';
 import '../../../../../core/utils/error_handler.dart';
+import '../../../../../core/constants/app_colors.dart';
 
 class PasswordInputPage extends StatefulWidget {
   const PasswordInputPage({super.key});
@@ -134,7 +135,7 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.check_circle, color: Colors.green, size: 60),
+              const Icon(Icons.check_circle, color: AppColors.success, size: 60),
               const SizedBox(height: 12),
               Text('「$displayName」を受け取りました！'),
               const SizedBox(height: 12),
