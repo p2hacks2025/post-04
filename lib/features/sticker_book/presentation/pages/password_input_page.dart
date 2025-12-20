@@ -128,33 +128,35 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
           title: const Text('シールゲット！'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.check_circle,
-                color: AppColors.success,
-                size: 60,
-              ),
-              const SizedBox(height: 12),
-              Text('「$displayName」を受け取りました！'),
-              const SizedBox(height: 12),
-              Center(
-                child: StickerTile(
-                  assetPath: displayPath,
-                  size: 140,
-                  showShadow: false,
-                  forceStaticImage: true,
-                  useModelViewer: false,
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.check_circle,
+                  color: AppColors.success,
+                  size: 60,
                 ),
-              ),
-              const SizedBox(height: 12),
-              if (rarity != null) ...[
+                const SizedBox(height: 12),
+                Text('「$displayName」を受け取りました！'),
+                const SizedBox(height: 12),
+                Center(
+                  child: StickerTile(
+                    assetPath: displayPath,
+                    size: 140,
+                    showShadow: false,
+                    forceStaticImage: true,
+                    useModelViewer: false,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                if (rarity != null) ...[
+                  const SizedBox(height: 8),
+                  _RarityStars(rarity: rarity.clamp(1, 5)),
+                ],
                 const SizedBox(height: 8),
-                _RarityStars(rarity: rarity.clamp(1, 5)),
               ],
-              const SizedBox(height: 8),
-            ],
+            ),
           ),
           actions: [
             TextButton(
