@@ -124,6 +124,7 @@ class _StickerBookPageState extends State<StickerBookPage>
       children: [
         Column(
           children: [
+            const SizedBox(height: 48),
             StickerBookPager(
               controller: _pageController,
               gradients: _boardGradients,
@@ -145,7 +146,6 @@ class _StickerBookPageState extends State<StickerBookPage>
                   _updateSticker(id, pos, rot, size, page),
               onRemove: (id, page) => _removeSticker(id, page),
             ),
-            const SizedBox(height: 12),
             const Spacer(),
           ],
         ),

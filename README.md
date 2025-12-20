@@ -1,7 +1,10 @@
 # P2HACKS2025 アピールシート
 
 ## プロダクト名
-きらトレ
+
+<img src="docs/readme-icon.png" alt="きらトレのアイコン" width="160" height="160" />
+
+**きらトレ**
 
 ## コンセプト
 
