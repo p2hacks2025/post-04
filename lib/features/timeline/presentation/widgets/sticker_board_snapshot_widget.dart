@@ -45,7 +45,42 @@ class StickerBoardSnapshotWidget extends StatelessWidget {
                 ),
               ),
               child: Stack(
+                clipBehavior: Clip.hardEdge,
                 children: [
+                  Positioned.fill(
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(left: 12 * scale),
+                          child: SizedBox(
+                            width: 32 * scale,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: List.generate(
+                                6,
+                                (_) => SizedBox(
+                                  width: 16 * scale,
+                                  height: 16 * scale,
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: Colors.transparent,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black38,
+                                          blurRadius: 0,
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   for (final s in snapshot.stickers)
                     Positioned(
                       left: s.dx * sx - size / 2,
