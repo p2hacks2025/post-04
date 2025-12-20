@@ -1,10 +1,16 @@
+import 'dart:convert';
+import 'package:flutter/services.dart';
+
+import 'sticker_assets.dart';
+import 'services/seal_metadata_service.dart';
+
 class StickerData {
-  final int number; // 図鑑番号
-  final String id; // システム用ID
-  final String name; // 表示名
-  final String assetPath; // 3Dモデル or 画像本体
-  final String iconPath; // 一覧用サムネイル（無い場合は同一パス）
-  final int rarity; // レア度（1=ノーマル〜5=レア）
+  final int number;
+  final String id;
+  final String name;
+  final String assetPath;
+  final String iconPath;
+  final int rarity;
 
   const StickerData({
     required this.number,
@@ -16,39 +22,103 @@ class StickerData {
   });
 }
 
-// 今あるアセット（assets/seals/*.glb）を使った暫定のマスターデータ。
-// アイコン画像が無いものは assetPath と同一にしています（GLBがそのまま表示されます）。
-const List<StickerData> stickerMasterData = [
-  StickerData(
-    number: 1,
-    id: 'heart_001',
-    name: 'ハート',
-    assetPath: 'assets/seals/heart.glb',
-    iconPath: 'assets/seals/heart.glb',
-    rarity: 1,
-  ),
-  StickerData(
-    number: 2,
-    id: 'cat_001',
-    name: 'ねこ',
-    assetPath: 'assets/seals/cat.glb',
-    iconPath: 'assets/icons/cat.png',
-    rarity: 2,
-  ),
-  StickerData(
-    number: 3,
-    id: 'circle_001',
-    name: 'まる',
-    assetPath: 'assets/seals/circle.glb',
-    iconPath: 'assets/seals/circle.glb',
-    rarity: 1,
-  ),
-  StickerData(
-    number: 4,
-    id: 'star_001',
-    name: 'ほし',
-    assetPath: 'assets/seals/star.glb',
-    iconPath: 'assets/seals/star.glb',
-    rarity: 3,
-  ),
-];
+class StickerCatalog {
+  static const String _manifestPath = 'AssetManifest.json';
+  static List<StickerData>? _cache;
+  static Set<String>? _pngAssets;
+  static Set<String>? _glbAssets;
+
+  static Future<List<StickerData>> load() async {
+    if (_cache != null) return _cache!;
+
+    final pngAssets = await _loadPngAssets();
+    final metadata = await SealMetadataService.loadMetadata();
+    var number = 1;
+
+    final list = pngAssets.map((path) {
+      final meta = metadata[path];
+      final id = StickerAssetPaths.baseName(path);
+      return StickerData(
+        number: number++,
+        id: id,
+        name: meta?.name ?? id,
+        assetPath: path,
+        iconPath: path,
+        rarity: meta?.rarity ?? 1,
+      );
+    }).toList(growable: false);
+
+    _cache = list;
+    return list;
+  }
+
+  static Future<List<String>> loadAssetPaths() async {
+    final list = await load();
+    return list.map((e) => e.assetPath).toList(growable: false);
+  }
+
+  static Future<bool> hasGlbForPng(String pngPath) async {
+    await _loadGlbAssets();
+    final glbPath = StickerAssetPaths.toGlb(pngPath);
+    return _glbAssets!.contains(glbPath);
+  }
+
+  static String glbPathForPng(String pngPath) =>
+      StickerAssetPaths.toGlb(pngPath);
+
+  static String normalizeAssetPath(String path) =>
+      StickerAssetPaths.normalizeToPng(path);
+
+  static void clearCache() {
+    _cache = null;
+    _pngAssets = null;
+    _glbAssets = null;
+    SealMetadataService.clearCache();
+  }
+
+  static Future<List<String>> _loadPngAssets() async {
+    await _loadManifestAssets();
+    if (_pngAssets!.isEmpty) {
+      final metadata = await SealMetadataService.loadMetadata();
+      final fromMeta = metadata.keys.where((path) {
+        return StickerAssetPaths.isSealAsset(path) &&
+            StickerAssetPaths.isPng(path);
+      }).toSet();
+      if (fromMeta.isNotEmpty) {
+        _pngAssets = fromMeta;
+      }
+    }
+    return _pngAssets!.toList()..sort();
+  }
+
+  static Future<void> _loadManifestAssets() async {
+    if (_pngAssets != null && _glbAssets != null) return;
+
+    try {
+      final jsonString = await rootBundle.loadString(_manifestPath);
+      final Map<String, dynamic> manifest = jsonDecode(jsonString);
+      final keys = manifest.keys;
+
+      _pngAssets = {
+        for (final path in keys)
+          if (StickerAssetPaths.isSealAsset(path) &&
+              StickerAssetPaths.isPng(path))
+            path,
+      };
+
+      _glbAssets = {
+        for (final path in keys)
+          if (StickerAssetPaths.isSealAsset(path) &&
+              StickerAssetPaths.isGlb(path))
+            path,
+      };
+    } catch (_) {
+      _pngAssets = <String>{};
+      _glbAssets = <String>{};
+    }
+  }
+
+  static Future<void> _loadGlbAssets() async {
+    await _loadManifestAssets();
+  }
+}

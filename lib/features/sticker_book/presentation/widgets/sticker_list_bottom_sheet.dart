@@ -210,7 +210,6 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
     _overlayPosition = globalPosition;
     _overlayEntry = OverlayEntry(
       builder: (context) {
-        final isGlb = assetPath.toLowerCase().endsWith('.glb');
         return Positioned(
           left: _overlayPosition.dx - 30,
           top: _overlayPosition.dy - 30,
@@ -220,8 +219,6 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
               assetPath: assetPath,
               size: 60,
               showShadow: false,
-              forceStaticImage: false,
-              useModelViewer: isGlb,
             ),
           ),
         );
@@ -238,12 +235,9 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
 
     final assetPath = widget.assetPath!; // 本体（配置に使う）
     final tileAssetPath = widget.displayAssetPath ?? assetPath; // 表示に使う
-    final isGlb = tileAssetPath.toLowerCase().endsWith('.glb');
 
     final tile = StickerTile(
       assetPath: tileAssetPath,
-      forceStaticImage: false,
-      useModelViewer: isGlb,
     );
 
     return GestureDetector(

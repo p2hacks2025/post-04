@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 
@@ -26,39 +27,14 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
   AnimationController? _rotationController;
   Animation<double>? _rotationAnimation;
   int _rarity = 1;
+  late final String _pngPath;
+  bool _hasGlb = false;
 
   @override
   void initState() {
     super.initState();
-    // マスターデータからレア度を決定（同期）
-    _rarity = _getRarityFromMaster(widget.assetPath);
-    _loadMetadata();
-    final isGlb = widget.assetPath.toLowerCase().endsWith('.glb');
-    if (isGlb) {
-      _rotationController = AnimationController(
-        duration: const Duration(seconds: 4),
-        vsync: this,
-      );
-      _rotationAnimation = Tween<double>(
-        begin: -0.785398, // -45度（ラジアン）
-        end: 0.785398, // +45度（ラジアン）
-      ).animate(
-        CurvedAnimation(
-          parent: _rotationController!,
-          curve: Curves.easeInOut,
-        ),
-      );
-      _rotationController!.repeat(reverse: true);
-    }
-  }
-
-  int _getRarityFromMaster(String assetPath) {
-    try {
-      final s = stickerMasterData.firstWhere((e) => e.assetPath == assetPath);
-      return s.rarity;
-    } catch (_) {
-      return 1;
-    }
+    _pngPath = StickerCatalog.normalizeAssetPath(widget.assetPath);
+    _initAssetInfo();
   }
 
   @override
@@ -68,16 +44,46 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
   }
 
   Future<void> _loadMetadata() async {
-    final metadata = await SealMetadataService.getMetadata(widget.assetPath);
+    final metadata = await SealMetadataService.getMetadata(_pngPath);
+    if (!mounted) return;
     setState(() {
       _metadata = metadata;
       _isLoading = false;
+      _rarity = metadata?.rarity ?? 1;
     });
+  }
+
+  Future<void> _initAssetInfo() async {
+    final hasGlb = await StickerCatalog.hasGlbForPng(_pngPath);
+    if (!mounted) return;
+    setState(() {
+      _hasGlb = hasGlb;
+    });
+    _setupRotationIfNeeded();
+    _loadMetadata();
+  }
+
+  void _setupRotationIfNeeded() {
+    if (_rotationController != null) return;
+    _rotationController = AnimationController(
+      duration: const Duration(seconds: 4),
+      vsync: this,
+    );
+    _rotationAnimation = Tween<double>(
+      begin: -0.35,
+      end: 0.35,
+    ).animate(
+      CurvedAnimation(
+        parent: _rotationController!,
+        curve: Curves.easeInOut,
+      ),
+    );
+    _rotationController!.repeat(reverse: true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isGlb = widget.assetPath.toLowerCase().endsWith('.glb');
+    final isGlb = _hasGlb;
 
     return Material(
       color: Colors.black54,
@@ -142,7 +148,7 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(16),
-                      child: isGlb && _rotationAnimation != null
+                      child: _rotationAnimation != null
                           ? AnimatedBuilder(
                               animation: _rotationAnimation!,
                               builder: (context, child) {
@@ -150,24 +156,35 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
                                   alignment: Alignment.center,
                                   transform: Matrix4.identity()
                                     ..setEntry(3, 2, 0.001) // 遠近感
-                                    ..rotateY(_rotationAnimation!.value),
-                                  child: ModelViewer(
-                                    src: widget.assetPath,
-                                    alt: '3D sticker',
-                                    autoRotate: false,
-                                    disableZoom: true,
-                                    cameraControls: false,
-                                    backgroundColor: Colors.transparent,
-                                    interactionPrompt: InteractionPrompt.none,
-                                  ),
+                                    ..rotateY(_rotationAnimation!.value)
+                                    ..rotateZ(pi / 4),
+                                  child: isGlb
+                                      ? ModelViewer(
+                                          src:
+                                              StickerCatalog.glbPathForPng(_pngPath),
+                                          alt: '3D sticker',
+                                          autoRotate: false,
+                                          disableZoom: true,
+                                          cameraControls: false,
+                                          backgroundColor: Colors.transparent,
+                                          interactionPrompt: InteractionPrompt.none,
+                                        )
+                                      : Image.asset(
+                                          _pngPath,
+                                          fit: BoxFit.contain,
+                                          filterQuality: FilterQuality.high,
+                                        ),
                                 );
                               },
                             )
                           : Center(
-                              child: Image.asset(
-                                widget.assetPath,
-                                fit: BoxFit.contain,
-                                filterQuality: FilterQuality.high,
+                              child: Transform.rotate(
+                                angle: pi / 4,
+                                child: Image.asset(
+                                  _pngPath,
+                                  fit: BoxFit.contain,
+                                  filterQuality: FilterQuality.high,
+                                ),
                               ),
                             ),
                     ),

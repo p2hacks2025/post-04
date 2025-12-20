@@ -19,18 +19,15 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
 
   // シール管理用ストア
   late final StickerCountStore _countStore;
+  List<StickerData> _catalog = [];
   bool _isStoreReady = false;
 
   bool _isLoading = false;
-  String? _statusMessage;
 
   @override
   void initState() {
     super.initState();
     // 1. シール管理機能の準備
-    _countStore = StickerCountStore(
-      stickerMasterData.map((e) => e.assetPath).toList(),
-    );
     _initStore();
   }
 
@@ -41,6 +38,10 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
   }
 
   Future<void> _initStore() async {
+    _catalog = await StickerCatalog.load();
+    _countStore = StickerCountStore(
+      _catalog.map((e) => e.assetPath).toList(),
+    );
     await _countStore.loadOrInit();
     if (mounted) {
       setState(() {
@@ -51,7 +52,7 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
 
   StickerData? _findStickerByAssetPath(String assetPath) {
     try {
-      return stickerMasterData.firstWhere((e) => e.assetPath == assetPath);
+      return _catalog.firstWhere((e) => e.assetPath == assetPath);
     } catch (_) {
       return null;
     }
@@ -73,7 +74,6 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
 
     setState(() {
       _isLoading = true;
-      _statusMessage = null;
     });
 
     try {
@@ -84,9 +84,7 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
           .get();
 
       if (snapshot.docs.isEmpty) {
-        setState(() {
-          _statusMessage = null;
-        });
+        if (!mounted) return;
         ErrorHandler.showWarningSnackBar(
           context,
           'そのあいことばは見つかりませんでした\nもう一度確認してください',
@@ -103,19 +101,18 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
       final String? assetPath = (data['sticker_id'] as String?)?.trim();
 
       if (assetPath == null || assetPath.isEmpty) {
-        setState(() {
-          _statusMessage = null;
-        });
+        if (!mounted) return;
         ErrorHandler.showErrorSnackBar(context, 'あいことばは使用済みか無効です');
         return;
       }
 
-      final sticker = _findStickerByAssetPath(assetPath);
+      final normalizedAsset = StickerCatalog.normalizeAssetPath(assetPath);
+      final sticker = _findStickerByAssetPath(normalizedAsset);
       final displayName = sticker?.name ?? 'シール';
-      final displayPath = sticker?.iconPath ?? assetPath;
+      final displayPath = sticker?.iconPath ?? normalizedAsset;
 
       // 3. 自分のシール帳に +1 する
-      await _countStore.inc(assetPath);
+      await _countStore.inc(normalizedAsset);
 
       // 4. Firestoreからデータを削除する（「使用済み」にするため）
       try {
@@ -144,8 +141,6 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
                   assetPath: displayPath,
                   size: 140,
                   showShadow: false,
-                  forceStaticImage: true,
-                  useModelViewer: false,
                 ),
               ),
               const SizedBox(height: 8),
@@ -163,9 +158,7 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
         ),
       );
     } catch (e) {
-      setState(() {
-        _statusMessage = null;
-      });
+      if (!mounted) return;
       ErrorHandler.showErrorSnackBar(
         context,
         e,

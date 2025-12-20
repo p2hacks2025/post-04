@@ -17,20 +17,21 @@ class QrScanPage extends StatefulWidget {
 
 class _QrScanPageState extends State<QrScanPage> {
   bool _isScanned = false; // 連続読み取り防止フラグ
-  late final StickerCountStore _countStore;
+  StickerCountStore? _countStore;
   bool _ready = false;
 
   @override
   void initState() {
     super.initState();
-    _countStore = StickerCountStore(
-      stickerMasterData.map((e) => e.assetPath).toList(),
-    );
     _init();
   }
 
   Future<void> _init() async {
-    await _countStore.loadOrInit();
+    final catalog = await StickerCatalog.load();
+    _countStore = StickerCountStore(
+      catalog.map((e) => e.assetPath).toList(),
+    );
+    await _countStore?.loadOrInit();
     if (!mounted) return;
     setState(() => _ready = true);
   }
@@ -65,11 +66,13 @@ class _QrScanPageState extends State<QrScanPage> {
       final String? type = data['type'];
       if (type == 'sticker_transfer' ||
           (type == null && data['asset'] != null)) {
-        final String asset = data['asset'];
+        final String asset =
+            StickerCatalog.normalizeAssetPath(data['asset'] as String);
         final String name = (data['name'] as String?) ?? 'シール';
         _handleReceive(context, name, asset);
       } else if (type == 'transfer_confirm') {
-        final String asset = data['asset'];
+        final String asset =
+            StickerCatalog.normalizeAssetPath(data['asset'] as String);
         _handleConfirmForSender(context, asset);
       } else {
         throw Exception('unsupported');
@@ -89,7 +92,9 @@ class _QrScanPageState extends State<QrScanPage> {
     String name,
     String asset,
   ) async {
-    await _countStore.inc(asset);
+    final countStore = _countStore;
+    if (countStore == null) return;
+    await countStore.inc(asset);
     if (!context.mounted) return;
     showDialog(
       context: context,
@@ -136,7 +141,9 @@ class _QrScanPageState extends State<QrScanPage> {
     BuildContext context,
     String asset,
   ) async {
-    await _countStore.dec(asset);
+    final countStore = _countStore;
+    if (countStore == null) return;
+    await countStore.dec(asset);
     if (!context.mounted) return;
     showDialog(
       context: context,

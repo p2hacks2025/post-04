@@ -22,7 +22,7 @@ class StickerCountStore {
         final map = (jsonMap['counts'] as Map<String, dynamic>?) ?? {};
         _counts = {
           for (final a in _catalogAssets)
-            a: (map[a] as num?)?.toInt() ?? 0,
+            a: _readCount(map, a),
         };
         return;
       } catch (_) {}
@@ -32,6 +32,16 @@ class StickerCountStore {
       for (final a in _catalogAssets) a: defaultCount,
     };
     await save();
+  }
+
+  int _readCount(Map<String, dynamic> map, String assetPath) {
+    final direct = (map[assetPath] as num?)?.toInt();
+    if (direct != null) return direct;
+    final glbPath = assetPath.replaceAll(
+      RegExp(r'\.png$', caseSensitive: false),
+      '.glb',
+    );
+    return (map[glbPath] as num?)?.toInt() ?? 0;
   }
 
   /// 保存済みの在庫ファイルを削除（次回 loadOrInit で defaultCount で再作成されます）

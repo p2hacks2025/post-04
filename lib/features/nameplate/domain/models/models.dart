@@ -47,13 +47,6 @@ class DecorationType {
   
   final String assetPath;
   
-  static const DecorationType heart = DecorationType('assets/seals/heart.glb');
-  static const DecorationType cat = DecorationType('assets/seals/cat.glb');
-  static const DecorationType circle = DecorationType('assets/seals/circle.glb');
-  static const DecorationType star = DecorationType('assets/seals/star.glb');
-  
-  static const List<DecorationType> all = [heart, cat, circle, star];
-  
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

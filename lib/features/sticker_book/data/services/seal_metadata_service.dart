@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 
 import '../../domain/models/models.dart';
+import '../sticker_assets.dart';
 
 class SealMetadataService {
   static const String _metadataPath = 'assets/seals/seal_metadata.json';
@@ -20,7 +21,9 @@ class SealMetadataService {
 
       _cache = {
         for (var sealJson in sealsJson)
-          (sealJson['assetPath'] as String): SealMetadata.fromJson(
+          StickerAssetPaths.normalizeToPng(
+            sealJson['assetPath'] as String,
+          ): SealMetadata.fromJson(
             sealJson as Map<String, dynamic>,
           )
       };
@@ -35,7 +38,7 @@ class SealMetadataService {
   /// アセットパスからシールのメタデータを取得
   static Future<SealMetadata?> getMetadata(String assetPath) async {
     final metadata = await loadMetadata();
-    return metadata[assetPath];
+    return metadata[StickerAssetPaths.normalizeToPng(assetPath)];
   }
 
   /// キャッシュをクリア

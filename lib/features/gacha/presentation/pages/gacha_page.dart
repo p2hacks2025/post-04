@@ -20,8 +20,8 @@ enum _GachaPhase { idle, animating, result }
 
 class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMixin {
   final _rand = Random();
-  late final StickerCountStore _countStore;
-  late final List<StickerData> _catalog;
+  StickerCountStore? _countStore;
+  List<StickerData> _catalog = [];
   late final Map<int, double> _weights = widget.rarityWeights ?? {
     1: 50, 2: 30, 3: 15, 4: 4, 5: 1,
   };
@@ -29,6 +29,7 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
   _GachaPhase _phase = _GachaPhase.idle;
   StickerData? _result;
   bool _isNew = false;
+  bool _ready = false;
 
   late final AnimationController _controller = AnimationController(
     vsync: this,
@@ -40,14 +41,18 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    _catalog = List.of(stickerMasterData)..sort((a, b) => a.number.compareTo(b.number));
-    _countStore = StickerCountStore(_catalog.map((e) => e.assetPath).toList());
     _init();
   }
 
   Future<void> _init() async {
-    await _countStore.loadOrInit();
-    setState(() {});
+    _catalog = await StickerCatalog.load();
+    _catalog.sort((a, b) => a.number.compareTo(b.number));
+    _countStore = StickerCountStore(_catalog.map((e) => e.assetPath).toList());
+    await _countStore?.loadOrInit();
+    if (!mounted) return;
+    setState(() {
+      _ready = _catalog.isNotEmpty;
+    });
   }
 
   @override
@@ -57,7 +62,7 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
   }
 
   void _startGacha() {
-    if (_phase == _GachaPhase.animating) return;
+    if (_phase == _GachaPhase.animating || !_ready) return;
     setState(() {
       _phase = _GachaPhase.animating;
       _result = null;
@@ -67,8 +72,10 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
 
   Future<void> _revealResult() async {
     final picked = _rollSticker();
-    final before = _countStore.getCount(picked.assetPath);
-    await _countStore.inc(picked.assetPath);
+    final countStore = _countStore;
+    if (countStore == null) return;
+    final before = countStore.getCount(picked.assetPath);
+    await countStore.inc(picked.assetPath);
     setState(() {
       _result = picked;
       _isNew = before == 0;
@@ -77,6 +84,9 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
   }
 
   StickerData _rollSticker() {
+    if (_catalog.isEmpty) {
+      throw StateError('Sticker catalog is empty.');
+    }
     // 1) レア度を重み付きで抽選
     final raritySet = _catalog.map((s) => s.rarity).toSet();
     final entries = raritySet.map((r) => MapEntry(r, _weights[r] ?? 1)).toList()
@@ -164,7 +174,7 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
               _ResultCard(
                 sticker: _result!,
                 isNew: _isNew,
-                ownedCount: _countStore.getCount(_result!.assetPath),
+                ownedCount: _countStore?.getCount(_result!.assetPath) ?? 0,
                 onClose: () => setState(() => _phase = _GachaPhase.idle),
                 onAgain: () {
                   setState(() => _phase = _GachaPhase.idle);
@@ -177,8 +187,8 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: ElevatedButton(
-            onPressed: isAnimating ? null : _startGacha,
+        child: ElevatedButton(
+            onPressed: (!isAnimating && _ready) ? _startGacha : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.textOnPrimary,
@@ -213,7 +223,6 @@ class _ResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // ガチャ結果はマスタの本体（assetPath）を表示する
     final displayPath = sticker.assetPath;
-    final isGlb = displayPath.toLowerCase().endsWith('.glb');
 
     return Material(
       color: AppColors.shadowDark,
@@ -233,7 +242,7 @@ class _ResultCard extends StatelessWidget {
             children: [
               Text('No.${sticker.number}  ${sticker.name}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
-              StickerTile(assetPath: displayPath, size: 160, useModelViewer: isGlb),
+              StickerTile(assetPath: displayPath, size: 160),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

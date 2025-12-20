@@ -13,8 +13,8 @@ class QrGeneratePage extends StatefulWidget {
 }
 
 class _QrGeneratePageState extends State<QrGeneratePage> {
-  late final StickerCountStore _countStore;
-  late final List<StickerData> _catalog;
+  StickerCountStore? _countStore;
+  List<StickerData> _catalog = [];
   bool _loading = true;
 
   StickerData? _selected;
@@ -22,13 +22,14 @@ class _QrGeneratePageState extends State<QrGeneratePage> {
   @override
   void initState() {
     super.initState();
-    _catalog = List.of(stickerMasterData)..sort((a, b) => a.number.compareTo(b.number));
-    _countStore = StickerCountStore(_catalog.map((e) => e.assetPath).toList());
     _init();
   }
 
   Future<void> _init() async {
-    await _countStore.loadOrInit();
+    _catalog = await StickerCatalog.load();
+    _catalog.sort((a, b) => a.number.compareTo(b.number));
+    _countStore = StickerCountStore(_catalog.map((e) => e.assetPath).toList());
+    await _countStore?.loadOrInit();
     if (!mounted) return;
     setState(() => _loading = false);
   }
@@ -53,10 +54,10 @@ class _QrGeneratePageState extends State<QrGeneratePage> {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     children: _catalog
-                        .where((s) => _countStore.getCount(s.assetPath) > 0)
+                        .where((s) => _countStore!.getCount(s.assetPath) > 0)
                         .map((s) {
                       final selected = _selected?.id == s.id;
-                      final count = _countStore.getCount(s.assetPath);
+                      final count = _countStore!.getCount(s.assetPath);
                       return GestureDetector(
                         onTap: () => setState(() => _selected = s),
                         child: Container(

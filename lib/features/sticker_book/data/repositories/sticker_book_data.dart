@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../domain/models/models.dart';
+import '../sticker_assets.dart';
 
 /// シール帳のデータを管理するクラス
 class StickerBookData {
@@ -78,16 +79,17 @@ class StickerBookStorage {
       final jsonString = await file.readAsString();
       final json = jsonDecode(jsonString) as Map<String, dynamic>;
       final data = StickerBookData.fromJson(json);
+      final normalized = _normalizeAssetPaths(data);
 
       // データの整合性をチェック
-      if (data.inventorySlots.length != defaultInventorySize ||
-          data.placedByPage.length != defaultPageCount) {
+      if (normalized.inventorySlots.length != defaultInventorySize ||
+          normalized.placedByPage.length != defaultPageCount) {
         debugPrint('データのサイズが一致しません。初期データを返します。');
         return null;
       }
 
       debugPrint('シール帳データを読み込みました');
-      return data;
+      return normalized;
     } catch (e) {
       debugPrint('データ読み込みエラー: $e');
       return null;
@@ -111,5 +113,30 @@ class StickerBookStorage {
   static Future<File> _getLocalFile() async {
     final directory = await getApplicationDocumentsDirectory();
     return File('${directory.path}/$_fileName');
+  }
+
+  static StickerBookData _normalizeAssetPaths(StickerBookData data) {
+    final slots = data.inventorySlots
+        .map((asset) => asset == null ? null : StickerAssetPaths.normalizeToPng(asset))
+        .toList(growable: false);
+    final pages = data.placedByPage
+        .map((page) => page
+            .map((sticker) => sticker.copyWith(
+                  displayAsset: sticker.displayAsset == null
+                      ? null
+                      : StickerAssetPaths.normalizeToPng(sticker.displayAsset!),
+                ))
+            .map((sticker) => PlacedSticker(
+                  id: sticker.id,
+                  asset: StickerAssetPaths.normalizeToPng(sticker.asset),
+                  displayAsset: sticker.displayAsset,
+                  inventoryIndex: sticker.inventoryIndex,
+                  position: sticker.position,
+                  rotation: sticker.rotation,
+                  size: sticker.size,
+                ))
+            .toList(growable: false))
+        .toList(growable: false);
+    return StickerBookData(inventorySlots: slots, placedByPage: pages);
   }
 }

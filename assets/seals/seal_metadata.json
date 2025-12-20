@@ -1,24 +1,14 @@
 {
   "seals": [
     {
-      "assetPath": "assets/seals/heart.glb",
-      "name": "ハート",
+      "assetPath": "assets/seals/nikukyu.png",
+      "name": "にくきゅう",
       "rarity": 5
     },
     {
-      "assetPath": "assets/seals/cat.glb",
+      "assetPath": "assets/seals/cat.png",
       "name": "ねこ",
       "rarity": 4
-    },
-    {
-      "assetPath": "assets/seals/circle.glb",
-      "name": "まる",
-      "rarity": 3
-    },
-    {
-      "assetPath": "assets/seals/star.glb",
-      "name": "ほし",
-      "rarity": 5
     }
   ]
 }

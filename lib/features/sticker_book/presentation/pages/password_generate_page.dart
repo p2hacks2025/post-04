@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../data/services/sticker_count_store.dart';
-// stickerMasterData と StickerData クラスが入っているファイルをインポート
 import '../../../../features/sticker_book/data/sticker_master.dart';
 import '../widgets/sticker_tile.dart';
 import '../../../../../core/utils/error_handler.dart';
@@ -18,9 +17,9 @@ class PasswordGeneratePage extends StatefulWidget {
 
 class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
   late final StickerCountStore _countStore;
+  List<StickerData> _catalog = [];
   bool _isStoreReady = false;
 
-  // ★修正箇所: ここを StickerData に変更
   StickerData? _selectedSticker;
 
   String? _generatedPassword;
@@ -29,13 +28,14 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
   @override
   void initState() {
     super.initState();
-    _countStore = StickerCountStore(
-      stickerMasterData.map((e) => e.assetPath).toList(),
-    );
     _initStore();
   }
 
   Future<void> _initStore() async {
+    _catalog = await StickerCatalog.load();
+    _countStore = StickerCountStore(
+      _catalog.map((e) => e.assetPath).toList(),
+    );
     await _countStore.loadOrInit();
     if (mounted) {
       setState(() {
@@ -44,10 +44,9 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
     }
   }
 
-  // ★修正箇所: ここも StickerData に変更
   List<StickerData> get _ownedStickers {
     if (!_isStoreReady) return [];
-    return stickerMasterData.where((sticker) {
+    return _catalog.where((sticker) {
       return _countStore.getCount(sticker.assetPath) > 0;
     }).toList();
   }
@@ -161,8 +160,6 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
                                   child: StickerTile(
                                     assetPath: sticker.iconPath,
                                     showShadow: false,
-                                    forceStaticImage: true,
-                                    useModelViewer: false,
                                   ),
                                 ),
                               ),
@@ -230,8 +227,6 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
                   assetPath: _selectedSticker!.iconPath,
                   size: 100,
                   showShadow: false,
-                  forceStaticImage: true,
-                  useModelViewer: false,
                 ),
               ),
             const SizedBox(height: 20),

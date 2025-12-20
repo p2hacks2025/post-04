@@ -19,14 +19,10 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   final List<String> _categories = const ['すべて', 'どうぶつ', 'のりもの', 'たべもの'];
   int _selectedCategoryIndex = 0;
 
-  final List<StickerData> _catalog = stickerMasterData;
+  List<StickerData> _catalog = [];
   List<String?> _inventorySlots = [];
-  late final StickerCountStore _countStore = StickerCountStore(
-    _catalog.map((e) => e.assetPath).toList(growable: false),
-  );
-  late final Map<String, String> _iconByAsset = {
-    for (final s in _catalog) s.assetPath: s.iconPath,
-  };
+  StickerCountStore? _countStore;
+  Map<String, String> _iconByAsset = {};
   Map<String, int> _counts = {};
 
   List<List<PlacedSticker>> _placedByPage = [];
@@ -49,7 +45,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initializePageCollections();
-    _loadData();
+    _loadCatalogAndData();
   }
 
   @override
@@ -72,8 +68,10 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   }
 
   Future<void> reloadCounts() async {
-    await _countStore.loadOrInit();
-    _counts = Map<String, int>.from(_countStore.counts);
+    final countStore = _countStore;
+    if (countStore == null) return;
+    await countStore.loadOrInit();
+    _counts = Map<String, int>.from(countStore.counts);
     if (mounted) {
       setState(() {
         _rebuildInventoryFromCounts();
@@ -197,8 +195,10 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       rotation: 0,
       size: const Size(stickerSize, stickerSize),
     );
-    await _countStore.dec(asset);
-    _counts = Map<String, int>.from(_countStore.counts);
+    final countStore = _countStore;
+    if (countStore == null) return;
+    await countStore.dec(asset);
+    _counts = Map<String, int>.from(countStore.counts);
     setState(() {
       _rebuildInventoryFromCounts();
       _placedByPage[page].add(sticker);
@@ -252,8 +252,10 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   Future<void> _removeSticker(String id, int page) async {
     final sticker = _placedByPage[page].firstWhere((s) => s.id == id);
     final asset = sticker.asset;
-    await _countStore.inc(asset);
-    _counts = Map<String, int>.from(_countStore.counts);
+    final countStore = _countStore;
+    if (countStore == null) return;
+    await countStore.inc(asset);
+    _counts = Map<String, int>.from(countStore.counts);
     setState(() {
       _placedByPage[page].removeWhere((s) => s.id == id);
       _rebuildInventoryFromCounts();
@@ -276,30 +278,38 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
 
   /// データを読み込む
   Future<void> _loadData() async {
-    final data = await StickerBookStorage.loadData(
-      defaultInventorySize: _inventorySize,
-      defaultPageCount: _pageCount,
-    );
+    try {
+      final data = await StickerBookStorage.loadData(
+        defaultInventorySize: _inventorySize,
+        defaultPageCount: _pageCount,
+      );
 
-    if (data != null) {
-      _placedByPage = data.placedByPage
-          .map((page) => List<PlacedSticker>.from(page))
-          .toList();
-    } else {
-      _placedByPage = List.generate(_pageCount, (_) => <PlacedSticker>[]);
+      if (data != null) {
+        _placedByPage = data.placedByPage
+            .map((page) => List<PlacedSticker>.from(page))
+            .toList();
+      } else {
+        _placedByPage = List.generate(_pageCount, (_) => <PlacedSticker>[]);
+      }
+      final countStore = _countStore;
+      if (countStore == null) return;
+      //初期値リセット（開発用なので、後で消す）
+      countStore.resetAllTo(7);
+      // シール枚数のDBをロード（なければ4種を1枚で初期化）
+      await countStore.loadOrInit(defaultCount: 1);
+      // // シール枚数のDBをロード（開発中: 強制的に0枚スタートにリセット）
+      // await _countStore.loadOrInit(defaultCount: 0, forceReset: true);
+      _counts = Map<String, int>.from(countStore.counts);
+      _rebuildInventoryFromCounts();
+    } catch (e) {
+      debugPrint('StickerBook load error: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
-    //初期値リセット（開発用なので、後で消す）
-    _countStore.resetAllTo(7);
-    // シール枚数のDBをロード（なければ4種を1枚で初期化）
-    await _countStore.loadOrInit(defaultCount: 1);
-    // // シール枚数のDBをロード（開発中: 強制的に0枚スタートにリセット）
-    // await _countStore.loadOrInit(defaultCount: 0, forceReset: true);
-    _counts = Map<String, int>.from(_countStore.counts);
-    _rebuildInventoryFromCounts();
-
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   void _rebuildInventoryFromCounts() {
@@ -315,5 +325,23 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       placedByPage: _placedByPage,
     );
     await StickerBookStorage.saveData(data);
+  }
+
+  Future<void> _loadCatalogAndData() async {
+    try {
+      _catalog = await StickerCatalog.load();
+      _iconByAsset = {for (final s in _catalog) s.assetPath: s.iconPath};
+      _countStore = StickerCountStore(
+        _catalog.map((e) => e.assetPath).toList(growable: false),
+      );
+      await _loadData();
+    } catch (e) {
+      debugPrint('StickerCatalog load error: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 }

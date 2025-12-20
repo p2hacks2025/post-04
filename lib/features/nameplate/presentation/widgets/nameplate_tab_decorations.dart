@@ -6,6 +6,7 @@ import '../../domain/constants/nameplate_constants.dart';
 import 'package:seal_app/core/widgets/category_tab.dart';
 import 'package:seal_app/core/widgets/grid_background.dart';
 import 'package:seal_app/features/sticker_book/presentation/widgets/sticker_tile.dart';
+import 'package:seal_app/features/sticker_book/data/sticker_master.dart';
 
 class NameplateTabDecorations extends StatefulWidget {
   const NameplateTabDecorations({
@@ -24,6 +25,23 @@ class NameplateTabDecorations extends StatefulWidget {
 class _NameplateTabDecorationsState extends State<NameplateTabDecorations> {
   int _selectedCategoryIndex = 0;
   final List<String> _categories = const ['すべて', 'どうぶつ', 'のりもの', 'たべもの'];
+  List<DecorationType> _decorations = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDecorations();
+  }
+
+  Future<void> _loadDecorations() async {
+    final catalog = await StickerCatalog.load();
+    if (!mounted) return;
+    setState(() {
+      _decorations = catalog.map((s) => DecorationType(s.assetPath)).toList();
+      _loading = false;
+    });
+  }
 
   void _addDecoration(DecorationType type) {
     if (widget.data.decorations.length >= NameplateColors.maxDecorations) {
@@ -78,12 +96,16 @@ class _NameplateTabDecorationsState extends State<NameplateTabDecorations> {
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
                 ),
-                itemCount: DecorationType.all.length,
+                itemCount: _decorations.length,
                 itemBuilder: (context, index) {
-                  final type = DecorationType.all[index];
+                  final type = _decorations[index];
                   return _SealTile(type: type, onTap: () => _addDecoration(type));
                 },
               ),
+              if (_loading)
+                const Positioned.fill(
+                  child: Center(child: CircularProgressIndicator()),
+                ),
             ],
           ),
         ),
@@ -135,15 +157,11 @@ class _SealTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isGlb = type.assetPath.toLowerCase().endsWith('.glb');
-
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: StickerTile(
         assetPath: type.assetPath,
-        forceStaticImage: false,
-        useModelViewer: isGlb,
       ),
     );
   }
