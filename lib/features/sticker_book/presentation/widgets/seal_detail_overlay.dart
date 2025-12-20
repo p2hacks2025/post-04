@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:model_viewer_plus/model_viewer_plus.dart';
 
-import '../../domain/models/models.dart';
 import '../../data/sticker_master.dart';
-import '../../data/services/seal_metadata_service.dart';
 
 class SealDetailOverlay extends StatefulWidget {
   const SealDetailOverlay({
@@ -21,43 +19,42 @@ class SealDetailOverlay extends StatefulWidget {
 
 class _SealDetailOverlayState extends State<SealDetailOverlay>
     with SingleTickerProviderStateMixin {
-  SealMetadata? _metadata;
-  bool _isLoading = true;
   AnimationController? _rotationController;
   Animation<double>? _rotationAnimation;
+  StickerData? _sticker;
   int _rarity = 1;
 
   @override
   void initState() {
     super.initState();
-    // マスターデータからレア度を決定（同期）
-    _rarity = _getRarityFromMaster(widget.assetPath);
-    _loadMetadata();
+    // マスターデータから表示情報を決定（同期）
+    _sticker = _getStickerFromMaster(widget.assetPath);
+    _rarity = (_sticker?.rarity ?? 1).clamp(1, 5);
     final isGlb = widget.assetPath.toLowerCase().endsWith('.glb');
     if (isGlb) {
       _rotationController = AnimationController(
         duration: const Duration(seconds: 4),
         vsync: this,
       );
-      _rotationAnimation = Tween<double>(
-        begin: -0.785398, // -45度（ラジアン）
-        end: 0.785398, // +45度（ラジアン）
-      ).animate(
-        CurvedAnimation(
-          parent: _rotationController!,
-          curve: Curves.easeInOut,
-        ),
-      );
+      _rotationAnimation =
+          Tween<double>(
+            begin: -0.785398, // -45度（ラジアン）
+            end: 0.785398, // +45度（ラジアン）
+          ).animate(
+            CurvedAnimation(
+              parent: _rotationController!,
+              curve: Curves.easeInOut,
+            ),
+          );
       _rotationController!.repeat(reverse: true);
     }
   }
 
-  int _getRarityFromMaster(String assetPath) {
+  StickerData? _getStickerFromMaster(String assetPath) {
     try {
-      final s = stickerMasterData.firstWhere((e) => e.assetPath == assetPath);
-      return s.rarity;
+      return stickerMasterData.firstWhere((e) => e.assetPath == assetPath);
     } catch (_) {
-      return 1;
+      return null;
     }
   }
 
@@ -65,14 +62,6 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
   void dispose() {
     _rotationController?.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadMetadata() async {
-    final metadata = await SealMetadataService.getMetadata(widget.assetPath);
-    setState(() {
-      _metadata = metadata;
-      _isLoading = false;
-    });
   }
 
   @override
@@ -113,16 +102,14 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
                       children: [
                         const SizedBox(width: 40), // 中央揃えのためのスペーサー
                         Expanded(
-                          child: _isLoading
-                              ? const SizedBox.shrink()
-                              : Text(
-                                  '${_metadata?.name ?? 'シール'}のシール',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
+                          child: Text(
+                            '${_sticker?.name ?? 'シール'}のシール',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                         IconButton(
                           icon: const Icon(Icons.close),
@@ -208,7 +195,9 @@ class _RarityStars extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 2),
               child: Icon(
                 isFilled ? Icons.star : Icons.star_border,
-                color: isFilled ? const Color(0xFFFFD700) : Colors.grey.shade300,
+                color: isFilled
+                    ? const Color(0xFFFFD700)
+                    : Colors.grey.shade300,
                 size: 24,
               ),
             );
@@ -218,4 +207,3 @@ class _RarityStars extends StatelessWidget {
     );
   }
 }
-

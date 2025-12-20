@@ -1,10 +1,7 @@
-import 'dart:convert';
-import 'package:flutter/services.dart';
-
 import '../../domain/models/models.dart';
+import '../sticker_master.dart';
 
 class SealMetadataService {
-  static const String _metadataPath = 'assets/seals/seal_metadata.json';
   static Map<String, SealMetadata>? _cache;
 
   /// シールのメタデータを読み込む
@@ -13,23 +10,16 @@ class SealMetadataService {
       return _cache!;
     }
 
-    try {
-      final String jsonString = await rootBundle.loadString(_metadataPath);
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
-      final List<dynamic> sealsJson = jsonData['seals'] as List<dynamic>;
+    _cache = {
+      for (final sticker in stickerMasterData)
+        sticker.assetPath: SealMetadata(
+          assetPath: sticker.assetPath,
+          name: sticker.name,
+          rarity: sticker.rarity,
+        ),
+    };
 
-      _cache = {
-        for (var sealJson in sealsJson)
-          (sealJson['assetPath'] as String): SealMetadata.fromJson(
-            sealJson as Map<String, dynamic>,
-          )
-      };
-
-      return _cache!;
-    } catch (e) {
-      // エラー時は空のマップを返す
-      return {};
-    }
+    return _cache!;
   }
 
   /// アセットパスからシールのメタデータを取得
