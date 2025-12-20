@@ -297,6 +297,15 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     _counts = Map<String, int>.from(_countStore.counts);
     setState(() {
       _placedByPage[page].removeWhere((s) => s.id == id);
+
+      // 元のスロットに戻せるなら戻す（空欄を詰めないため）
+      final idx = sticker.inventoryIndex;
+      if (idx >= 0 && idx < _inventorySlots.length) {
+        if (_inventorySlots[idx] == null || _inventorySlots[idx] == asset) {
+          _inventorySlots[idx] = asset;
+        }
+      }
+
       _rebuildInventoryFromCounts();
       if (_selectedStickerId == id) {
         _selectedStickerId = null;
@@ -327,8 +336,14 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       _placedByPage = data.placedByPage
           .map((page) => List<PlacedSticker>.from(page))
           .toList();
+      _inventorySlots = List<String?>.from(data.inventorySlots);
     } else {
       _placedByPage = List.generate(_pageCount, (_) => <PlacedSticker>[]);
+      _inventorySlots = List<String?>.filled(
+        _inventorySize,
+        null,
+        growable: false,
+      );
     }
     //初期値リセット（開発用なので、後で消す）
     _countStore.resetAllTo(1);
@@ -460,9 +475,38 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   }
 
   void _rebuildInventoryFromCounts() {
-    _inventorySlots = _catalog
-        .map((s) => (_counts[s.assetPath] ?? 0) > 0 ? s.assetPath : null)
-        .toList(growable: false);
+    // 1) 固定長スロットに整形
+    var slots = List<String?>.from(_inventorySlots);
+    if (slots.length > _inventorySize) {
+      slots = slots.sublist(0, _inventorySize);
+    } else if (slots.length < _inventorySize) {
+      slots.addAll(List<String?>.filled(_inventorySize - slots.length, null));
+    }
+
+    // 2) 0枚になったものは、そのスロットだけ空にする（順番は維持）
+    for (var i = 0; i < slots.length; i++) {
+      final asset = slots[i];
+      if (asset == null) continue;
+      if ((_counts[asset] ?? 0) <= 0) {
+        slots[i] = null;
+      }
+    }
+
+    // 初期状態で「全枠空」の場合のみ、所持しているものを先頭から配置してシードする。
+    // （消費後に他のシールで空きを埋めて“詰まる”のを防ぐ）
+    final hasAny = slots.any((e) => e != null);
+    if (!hasAny) {
+      var write = 0;
+      for (final s in _catalog) {
+        if (write >= slots.length) break;
+        final count = _counts[s.assetPath] ?? 0;
+        if (count <= 0) continue;
+        slots[write] = s.assetPath;
+        write++;
+      }
+    }
+
+    _inventorySlots = slots;
   }
 
   /// データを保存する

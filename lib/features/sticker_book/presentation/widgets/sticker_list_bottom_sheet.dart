@@ -169,20 +169,6 @@ class _StickerGridArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final filteredAssets = <String?>[];
-    final originalIndices = <int>[];
-    for (var i = 0; i < inventorySlots.length; i++) {
-      final asset = inventorySlots[i];
-      if (asset == null) {
-        continue;
-      }
-      if (selectedCategoryIndex == 0 ||
-          _matchesCategory(asset, selectedCategoryIndex)) {
-        filteredAssets.add(asset);
-        originalIndices.add(i);
-      }
-    }
-
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: [
@@ -201,17 +187,23 @@ class _StickerGridArea extends StatelessWidget {
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
           ),
-          itemCount: filteredAssets.length,
+          // nullも含めてスロット数ぶん描画し、消費後に後ろが詰まらないようにする
+          itemCount: inventorySlots.length,
           itemBuilder: (context, index) {
-            final asset = filteredAssets[index];
-            final originalIndex = originalIndices[index];
+            final rawAsset = inventorySlots[index];
+            final asset =
+                (rawAsset != null &&
+                    (selectedCategoryIndex == 0 ||
+                        _matchesCategory(rawAsset, selectedCategoryIndex)))
+                ? rawAsset
+                : null;
             final displayAsset = (asset != null && displayAssetResolver != null)
                 ? displayAssetResolver!(asset)
                 : asset;
             return _InventoryStickerTile(
               assetPath: asset,
               displayAssetPath: displayAsset,
-              slotIndex: originalIndex,
+              slotIndex: index,
               onTap: asset != null ? () => onShowDetail(asset) : null,
               onDropSticker: onDropSticker,
             );
