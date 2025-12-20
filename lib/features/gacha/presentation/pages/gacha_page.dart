@@ -2,15 +2,19 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 
+import '../../data/services/gacha_limit_store.dart';
 import '../../../sticker_book/data/sticker_master.dart';
 import '../../../sticker_book/data/services/sticker_count_store.dart';
 import '../../../sticker_book/presentation/widgets/sticker_tile.dart';
 
 class GachaPage extends StatefulWidget {
-  const GachaPage({super.key, this.rarityWeights});
+  const GachaPage({super.key, this.rarityWeights, this.dailyLimit = 5});
 
   // レア度→重み（大きいほど出やすい）。未指定ならデフォルト
   final Map<int, double>? rarityWeights;
+
+  // 1日に引ける回数（未指定なら 5 回）
+  final int dailyLimit;
 
   @override
   State<GachaPage> createState() => _GachaPageState();
@@ -21,6 +25,7 @@ enum _GachaPhase { idle, animating, result }
 class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMixin {
   final _rand = Random();
   late final StickerCountStore _countStore;
+  late final GachaLimitStore _limitStore;
   late final List<StickerData> _catalog;
   late final Map<int, double> _weights = widget.rarityWeights ?? {
     1: 50, 2: 30, 3: 15, 4: 4, 5: 1,
@@ -29,6 +34,7 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
   _GachaPhase _phase = _GachaPhase.idle;
   StickerData? _result;
   bool _isNew = false;
+  int _remainingToday = 0;
 
   late final AnimationController _controller = AnimationController(
     vsync: this,
@@ -42,12 +48,16 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
     super.initState();
     _catalog = List.of(stickerMasterData)..sort((a, b) => a.number.compareTo(b.number));
     _countStore = StickerCountStore(_catalog.map((e) => e.assetPath).toList());
+    _limitStore = GachaLimitStore(dailyLimit: widget.dailyLimit);
     _init();
   }
 
   Future<void> _init() async {
     await _countStore.loadOrInit();
-    setState(() {});
+    await _limitStore.loadOrInit();
+    setState(() {
+      _remainingToday = _limitStore.remaining;
+    });
   }
 
   @override
@@ -56,13 +66,42 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
     super.dispose();
   }
 
-  void _startGacha() {
+  Future<void> _startGacha() async {
     if (_phase == _GachaPhase.animating) return;
-    setState(() {
-      _phase = _GachaPhase.animating;
-      _result = null;
-    });
-    _controller.forward(from: 0);
+
+    if (_remainingToday <= 0) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('今日はもうガチャを引けないよ…')),
+      );
+      return;
+    }
+
+    try {
+      final ok = await _limitStore.consumeOne();
+      if (!ok) {
+        if (!mounted) return;
+        setState(() {
+          _remainingToday = _limitStore.remaining;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('今日はもうガチャを引けないよ…')),
+        );
+        return;
+      }
+      if (!mounted) return;
+      setState(() {
+        _remainingToday = _limitStore.remaining;
+        _phase = _GachaPhase.animating;
+        _result = null;
+      });
+      _controller.forward(from: 0);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('保存に失敗しちゃった…もう一回ためしてね')),
+      );
+    }
   }
 
   Future<void> _revealResult() async {
@@ -101,6 +140,7 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     final isAnimating = _phase == _GachaPhase.animating;
+    final canStart = !isAnimating && _remainingToday > 0;
 
     // かわいい箱の演出（ゆらゆら＋ぷにっと拡縮＋キラキラ）
 
@@ -177,16 +217,29 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: ElevatedButton(
-            onPressed: isAnimating ? null : _startGacha,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.textOnPrimary,
-              shape: const StadiumBorder(),
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
-            ),
-            child: Text(isAnimating ? '抽選中...' : 'ガチャをひく'),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '今日あと $_remainingToday 回',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  color: _remainingToday > 0 ? AppColors.primaryDark : AppColors.textDisabled,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: canStart ? () => _startGacha() : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.textOnPrimary,
+                  shape: const StadiumBorder(),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                ),
+                child: Text(isAnimating ? '抽選中...' : 'ガチャをひく'),
+              ),
+            ],
           ),
         ),
       ),
