@@ -2,9 +2,9 @@
 
 ## プロダクト名
 
-<img src="docs/readme-icon.png" alt="きらトレのアイコン" width="48" height="48" align="left" />
+<img src="docs/readme-icon.png" alt="きらトレのアイコン" width="120" height="120" />
 
-# きらトレ
+きらトレ
 
 ## コンセプト
 
