@@ -124,7 +124,67 @@
       "assetPath": "assets/seals/star.png",
       "name": "star",
       "rarity": 1,
-      "size": 1
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/dog_holo.png",
+      "name": "dog_holo",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/hosi_bluck_holo.png",
+      "name": "hosi_bluck_holo",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/hosi_bule_holo.png",
+      "name": "hosi_bule_holo",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/hosi_oren_holo.png",
+      "name": "hosi_oren_holo",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/hosi_pink_holo.png",
+      "name": "hosi_pink_holo",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/hurt_blue_holo.png",
+      "name": "hurt_blue_holo",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/hurt_gre_holo.png",
+      "name": "hurt_gre_holo",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/hurt_pink_holo.png",
+      "name": "hurt_pink_holo",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/hurt_pur_holo.png",
+      "name": "hurt_pur_holo",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/hurt_yell_holo.png",
+      "name": "hurt_yell_holo",
+      "rarity": 1,
+      "size": 2
     }
   ]
 }
