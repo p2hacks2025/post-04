@@ -51,7 +51,7 @@ class _StickerBookPageState extends State<StickerBookPage>
   Set<int> _publishedPages = <int>{};
   int _currentPage = 0;
 
-  static const int _inventorySize = 20;
+  late final int _inventorySize = _catalog.length;
   static const int _pageCount = 4;
 
   final List<List<Color>> _boardGradients = AppColors.stickerBookGradients;
@@ -155,6 +155,9 @@ class _StickerBookPageState extends State<StickerBookPage>
           onCategorySelected: (index) {
             setState(() => _selectedCategoryIndex = index);
           },
+          masterAssets: _catalog
+              .map((e) => e.assetPath)
+              .toList(growable: false),
           inventorySlots: _inventorySlots,
           onTapSticker: _handleStickerTap,
           onDropSticker: _handleDropFromList,
@@ -333,8 +336,14 @@ class _StickerBookPageState extends State<StickerBookPage>
       _placedByPage = data.placedByPage
           .map((page) => List<PlacedSticker>.from(page))
           .toList();
+      _inventorySlots = List<String?>.from(data.inventorySlots);
     } else {
       _placedByPage = List.generate(_pageCount, (_) => <PlacedSticker>[]);
+      _inventorySlots = List<String?>.filled(
+        _inventorySize,
+        null,
+        growable: false,
+      );
     }
     //初期値リセット（開発用なので、後で消す）
     _countStore.resetAllTo(1);
@@ -477,9 +486,19 @@ class _StickerBookPageState extends State<StickerBookPage>
   }
 
   void _rebuildInventoryFromCounts() {
-    _inventorySlots = _catalog
-        .map((s) => (_counts[s.assetPath] ?? 0) > 0 ? s.assetPath : null)
-        .toList(growable: false);
+    // マスターデータの順番＝スロットの順番として固定する。
+    // 所持数が 0 のものは null（空欄）にすることで、消費しても後ろが詰まらない。
+    final slots = List<String?>.filled(_inventorySize, null, growable: false);
+    final limit = _inventorySize < _catalog.length
+        ? _inventorySize
+        : _catalog.length;
+    for (var i = 0; i < limit; i++) {
+      final asset = _catalog[i].assetPath;
+      if ((_counts[asset] ?? 0) > 0) {
+        slots[i] = asset;
+      }
+    }
+    _inventorySlots = slots;
   }
 
   /// データを保存する
