@@ -25,7 +25,10 @@ class _TimelinePageState extends State<TimelinePage> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8F0),
       appBar: AppBar(
-        title: const Text('みんなの'),
+        title: const Text(
+          'みんなのシール帳',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
         backgroundColor: const Color(0xFFC6845A),
         foregroundColor: Colors.white,
       ),
