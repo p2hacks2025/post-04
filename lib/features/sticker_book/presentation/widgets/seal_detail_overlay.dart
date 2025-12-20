@@ -81,6 +81,7 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
     _rotationController!.repeat(reverse: true);
   }
 
+
   @override
   Widget build(BuildContext context) {
     final isGlb = _hasGlb;
@@ -137,6 +138,16 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
                       ],
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      _hasGlb
+                          ? 'png: $_pngPath\n glb: ${StickerCatalog.glbPathForPng(_pngPath)}'
+                          : 'png: $_pngPath',
+                      style: const TextStyle(fontSize: 12, color: Colors.black54),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                   // シール画像/3Dモデル
                   Container(
                     width: double.infinity,
@@ -159,8 +170,9 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
                                     ..rotateY(_rotationAnimation!.value),
                                   child: isGlb
                                       ? ModelViewer(
-                                          src:
-                                              StickerCatalog.glbPathForPng(_pngPath),
+                                          src: StickerCatalog.glbPathForPng(
+                                            _pngPath,
+                                          ),
                                           alt: '3D sticker',
                                           autoRotate: false,
                                           disableZoom: true,

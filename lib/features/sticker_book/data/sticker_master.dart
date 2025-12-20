@@ -60,7 +60,14 @@ class StickerCatalog {
   static Future<bool> hasGlbForPng(String pngPath) async {
     await _loadGlbAssets();
     final glbPath = StickerAssetPaths.toGlb(pngPath);
-    return _glbAssets!.contains(glbPath);
+    if (_glbAssets!.contains(glbPath)) return true;
+    try {
+      await rootBundle.load(glbPath);
+      _glbAssets!.add(glbPath);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   static String glbPathForPng(String pngPath) =>
