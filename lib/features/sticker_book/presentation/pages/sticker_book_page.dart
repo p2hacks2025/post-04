@@ -22,7 +22,8 @@ class StickerBookPage extends StatefulWidget {
   State<StickerBookPage> createState() => _StickerBookPageState();
 }
 
-class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingObserver {
+class _StickerBookPageState extends State<StickerBookPage>
+    with WidgetsBindingObserver {
   final List<String> _categories = const ['すべて', 'マーク', 'はこだて', 'ほか'];
   int _selectedCategoryIndex = 0;
 
@@ -65,7 +66,10 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   }
 
   void _onPageChanged() {
-    final p = (_pageController.page ?? 0).round().clamp(0, _boardKeys.length - 1);
+    final p = (_pageController.page ?? 0).round().clamp(
+      0,
+      _boardKeys.length - 1,
+    );
     if (p != _currentPage && mounted) {
       setState(() => _currentPage = p);
     }
@@ -84,7 +88,8 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       _saveData();
     } else if (state == AppLifecycleState.resumed) {
       _reloadCounts();
@@ -108,21 +113,18 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   @override
   Widget build(BuildContext context) {
     _initializePageCollections();
-    
+
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    
+
     final published = _publishedPages.contains(_currentPage);
 
     return Stack(
       children: [
         Column(
           children: [
+            const SizedBox(height: 48),
             StickerBookPager(
               controller: _pageController,
               gradients: _boardGradients,
@@ -144,7 +146,6 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
                   _updateSticker(id, pos, rot, size, page),
               onRemove: (id, page) => _removeSticker(id, page),
             ),
-            const SizedBox(height: 12),
             const Spacer(),
           ],
         ),
@@ -169,7 +170,9 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
               icon: Icon(published ? Icons.public : Icons.lock),
               label: Text(published ? '公開中' : '公開'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: published ? Colors.green : const Color(0xFFC6845A),
+                backgroundColor: published
+                    ? Colors.green
+                    : const Color(0xFFC6845A),
                 foregroundColor: Colors.white,
                 shape: const StadiumBorder(),
               ),
@@ -190,7 +193,10 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     });
   }
 
-  Future<void> _handleDropFromList(InventoryPayload payload, Offset globalPosition) async {
+  Future<void> _handleDropFromList(
+    InventoryPayload payload,
+    Offset globalPosition,
+  ) async {
     final page = (_pageController.page ?? 0).round().clamp(
       0,
       _boardKeys.length - 1,
@@ -410,8 +416,9 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('公開に失敗しました（台紙サイズ取得不可）')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('公開に失敗しました（台紙サイズ取得不可）')));
       }
       return;
     }
@@ -439,18 +446,28 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       stickers: stickers,
     );
 
-    await _publicRepo.publishPage(page: page, nameplate: nameplate, board: snapshot);
+    await _publicRepo.publishPage(
+      page: page,
+      nameplate: nameplate,
+      board: snapshot,
+    );
 
     if (!mounted) return;
     setState(() => _publishedPages = {..._publishedPages, page});
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('公開しました')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('公開しました')));
   }
 
   Future<void> _unpublish(int page) async {
     await _publicRepo.unpublishPage(page: page);
     if (!mounted) return;
-    setState(() => _publishedPages = _publishedPages.where((p) => p != page).toSet());
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('非公開にしました（DBから削除）')));
+    setState(
+      () => _publishedPages = _publishedPages.where((p) => p != page).toSet(),
+    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('非公開にしました（DBから削除）')));
   }
 
   Future<void> _syncIfPublished(int page) async {
