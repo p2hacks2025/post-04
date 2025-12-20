@@ -80,17 +80,36 @@ class SealMetadata {
     required this.assetPath,
     required this.name,
     required this.rarity,
+    this.size,
   });
 
   final String assetPath;
   final String name;
   final int rarity; // 1-5
+  final double? size;
+
+  /// size値（1,2,3）をピクセル値（40,80,120）に変換
+  static double? _convertSizeToPixels(int? sizeValue) {
+    if (sizeValue == null) return null;
+    switch (sizeValue) {
+      case 1:
+        return 40.0;
+      case 2:
+        return 80.0;
+      case 3:
+        return 120.0;
+      default:
+        return null;
+    }
+  }
 
   factory SealMetadata.fromJson(Map<String, dynamic> json) {
+    final sizeValue = json['size'] as num?;
     return SealMetadata(
       assetPath: json['assetPath'] as String,
       name: json['name'] as String,
       rarity: json['rarity'] as int,
+      size: _convertSizeToPixels(sizeValue?.toInt()),
     );
   }
 
@@ -99,6 +118,7 @@ class SealMetadata {
       'assetPath': assetPath,
       'name': name,
       'rarity': rarity,
+      if (size != null) 'size': size,
     };
   }
 }

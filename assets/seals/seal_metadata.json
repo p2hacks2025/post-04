@@ -3,12 +3,14 @@
     {
       "assetPath": "assets/seals/nikukyu.png",
       "name": "にくきゅう",
-      "rarity": 5
+      "rarity": 5,
+      "size": 2
     },
     {
-      "assetPath": "assets/seals/cat.png",
-      "name": "ねこ",
-      "rarity": 4
+      "assetPath": "assets/seals/hosi.png",
+      "name": "ほし",
+      "rarity": 4,
+      "size": 1
     }
   ]
 }

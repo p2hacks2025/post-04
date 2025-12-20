@@ -23,6 +23,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   List<String?> _inventorySlots = [];
   StickerCountStore? _countStore;
   Map<String, String> _iconByAsset = {};
+  Map<String, double> _sizeByAsset = {};
   Map<String, int> _counts = {};
 
   List<List<PlacedSticker>> _placedByPage = [];
@@ -134,6 +135,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
           onTapSticker: _handleStickerTap,
           onDropSticker: _handleDropFromList,
           displayAssetResolver: (asset) => _iconByAsset[asset] ?? asset,
+          sizeResolver: (asset) => _sizeByAsset[asset],
         ),
       ],
     );
@@ -181,7 +183,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   ]) async {
     if (slotIndex < 0 || slotIndex >= _inventorySlots.length) return;
     if (_inventorySlots[slotIndex] != asset) return;
-    const stickerSize = 72.0;
+    final stickerSize = _sizeByAsset[asset] ?? 72.0;
     final clamped = Offset(
       position.dx.clamp(stickerSize / 2, boardSize.width - stickerSize / 2),
       position.dy.clamp(stickerSize / 2, boardSize.height - stickerSize / 2),
@@ -193,7 +195,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       inventoryIndex: slotIndex,
       position: clamped,
       rotation: 0,
-      size: const Size(stickerSize, stickerSize),
+      size: Size(stickerSize, stickerSize),
     );
     final countStore = _countStore;
     if (countStore == null) return;
@@ -216,10 +218,10 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     Size boardSize,
     int page,
   ) {
-    const stickerSize = 72.0;
     setState(() {
       for (var i = 0; i < _placedByPage[page].length; i++) {
         if (_placedByPage[page][i].id == id) {
+          final stickerSize = _placedByPage[page][i].size.width;
           final clamped = Offset(
             position.dx.clamp(
               stickerSize / 2,
@@ -331,6 +333,10 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     try {
       _catalog = await StickerCatalog.load();
       _iconByAsset = {for (final s in _catalog) s.assetPath: s.iconPath};
+      _sizeByAsset = {
+        for (final s in _catalog)
+          s.assetPath: s.size ?? 72.0, // デフォルトは72.0
+      };
       _countStore = StickerCountStore(
         _catalog.map((e) => e.assetPath).toList(growable: false),
       );

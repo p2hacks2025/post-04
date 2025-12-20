@@ -17,6 +17,7 @@ class StickerListBottomSheet extends StatelessWidget {
     required this.onTapSticker,
     required this.onDropSticker,
     this.displayAssetResolver,
+    this.sizeResolver,
   });
 
   final List<String> categories;
@@ -27,6 +28,7 @@ class StickerListBottomSheet extends StatelessWidget {
   final void Function(InventoryPayload payload, Offset globalPosition)
   onDropSticker;
   final String Function(String assetPath)? displayAssetResolver;
+  final double? Function(String assetPath)? sizeResolver;
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +68,7 @@ class StickerListBottomSheet extends StatelessWidget {
                   },
                   onDropSticker: onDropSticker,
                   displayAssetResolver: displayAssetResolver,
+                  sizeResolver: sizeResolver,
                 ),
               ),
             ],
@@ -119,21 +122,24 @@ class _StickerGridArea extends StatelessWidget {
     required this.onShowDetail,
     required this.onDropSticker,
     this.displayAssetResolver,
+    this.sizeResolver,
   });
 
   final ScrollController scrollController;
   final List<String?> inventorySlots;
   final void Function(String asset, int slotIndex) onTapSticker;
   final void Function(String assetPath) onShowDetail;
-  final void Function(InventoryPayload payload, Offset globalPosition) onDropSticker;
+  final void Function(InventoryPayload payload, Offset globalPosition)
+  onDropSticker;
   final String Function(String assetPath)? displayAssetResolver;
+  final double? Function(String assetPath)? sizeResolver;
 
   @override
   Widget build(BuildContext context) {
     final visibleStickers = List<String?>.from(inventorySlots);
 
     return Stack(
-      clipBehavior: Clip.hardEdge,
+      clipBehavior: Clip.none,
       children: [
         const Positioned.fill(
           child: Padding(
@@ -145,6 +151,7 @@ class _StickerGridArea extends StatelessWidget {
           controller: scrollController,
           physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.all(16),
+          clipBehavior: Clip.none,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 4,
             mainAxisSpacing: 12,
@@ -159,6 +166,7 @@ class _StickerGridArea extends StatelessWidget {
             return _InventoryStickerTile(
               assetPath: asset,
               displayAssetPath: displayAsset,
+              sizeResolver: sizeResolver,
               slotIndex: index,
               onTap: asset != null ? () => onShowDetail(asset) : null,
               onDropSticker: onDropSticker,
@@ -174,6 +182,7 @@ class _InventoryStickerTile extends StatefulWidget {
   const _InventoryStickerTile({
     required this.assetPath,
     this.displayAssetPath,
+    this.sizeResolver,
     required this.slotIndex,
     required this.onTap,
     required this.onDropSticker,
@@ -181,9 +190,11 @@ class _InventoryStickerTile extends StatefulWidget {
 
   final String? assetPath;
   final String? displayAssetPath; // 表示用（サムネイル等）。未指定なら assetPath
+  final double? Function(String assetPath)? sizeResolver;
   final int slotIndex;
   final VoidCallback? onTap;
-  final void Function(InventoryPayload payload, Offset globalPosition) onDropSticker;
+  final void Function(InventoryPayload payload, Offset globalPosition)
+  onDropSticker;
 
   @override
   State<_InventoryStickerTile> createState() => _InventoryStickerTileState();
@@ -206,7 +217,11 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
     _isDragging = false;
   }
 
-  void _showOverlay(BuildContext context, String assetPath, Offset globalPosition) {
+  void _showOverlay(
+    BuildContext context,
+    String assetPath,
+    Offset globalPosition,
+  ) {
     _overlayPosition = globalPosition;
     _overlayEntry = OverlayEntry(
       builder: (context) {
@@ -236,8 +251,16 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
     final assetPath = widget.assetPath!; // 本体（配置に使う）
     final tileAssetPath = widget.displayAssetPath ?? assetPath; // 表示に使う
 
-    final tile = StickerTile(
-      assetPath: tileAssetPath,
+    // sizeResolverには本体のassetPathを渡す（_sizeByAssetのキーはassetPath）
+    final desiredSize = widget.sizeResolver?.call(assetPath) ?? 72.0;
+
+    final tile = OverflowBox(
+      minWidth: 0,
+      minHeight: 0,
+      maxWidth: double.infinity,
+      maxHeight: double.infinity,
+      alignment: Alignment.center,
+      child: StickerTile(assetPath: tileAssetPath, size: desiredSize),
     );
 
     return GestureDetector(

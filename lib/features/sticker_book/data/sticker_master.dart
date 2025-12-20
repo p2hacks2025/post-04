@@ -11,6 +11,7 @@ class StickerData {
   final String assetPath;
   final String iconPath;
   final int rarity;
+  final double? size;
 
   const StickerData({
     required this.number,
@@ -19,6 +20,7 @@ class StickerData {
     required this.assetPath,
     required this.iconPath,
     this.rarity = 1,
+    this.size,
   });
 }
 
@@ -45,6 +47,7 @@ class StickerCatalog {
         assetPath: path,
         iconPath: path,
         rarity: meta?.rarity ?? 1,
+        size: meta?.size,
       );
     }).toList(growable: false);
 

@@ -17,34 +17,34 @@ class StickerTile extends StatelessWidget {
     const boxShadow = <BoxShadow>[];
     final padding = const EdgeInsets.all(0);
 
-    final child = _buildContent();
     final decoration = BoxDecoration(
       borderRadius: BorderRadius.circular(12),
       boxShadow: boxShadow,
     );
 
-    final content = Container(
-      decoration: decoration,
-      padding: padding,
-      alignment: Alignment.center,
-      child: child,
-    );
-
-    if (size != null) {
-      return SizedBox(width: size, height: size, child: content);
-    }
-
-    return content;
-  }
-
-  Widget _buildContent() {
-    final childSize = size ?? double.infinity;
     final imagePath = _resolveImagePath(assetPath);
-    final iconSize = childSize == double.infinity ? 48.0 : childSize * 0.6;
-    return SizedBox(
-      width: childSize,
-      height: childSize,
-      child: Image.asset(
+    final iconSize = size != null ? size! * 0.6 : 48.0;
+
+    Widget imageWidget;
+    if (size != null) {
+      imageWidget = SizedBox(
+        width: size,
+        height: size,
+        child: Image.asset(
+          imagePath,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(
+              Icons.broken_image_outlined,
+              size: iconSize,
+              color: Colors.grey.shade500,
+            );
+          },
+        ),
+      );
+    } else {
+      imageWidget = Image.asset(
         imagePath,
         fit: BoxFit.contain,
         filterQuality: FilterQuality.high,
@@ -55,8 +55,19 @@ class StickerTile extends StatelessWidget {
             color: Colors.grey.shade500,
           );
         },
-      ),
+      );
+    }
+
+    final content = Container(
+      width: size,
+      height: size,
+      decoration: decoration,
+      padding: padding,
+      alignment: Alignment.center,
+      child: imageWidget,
     );
+
+    return content;
   }
 
   String _resolveImagePath(String path) {
