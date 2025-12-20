@@ -22,7 +22,9 @@ class CategoryTab extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.categorySelected : AppColors.categoryUnselected,
+          color: isSelected
+              ? AppColors.categorySelected
+              : AppColors.categoryUnselected,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(12),
             topRight: Radius.circular(12),
@@ -46,7 +48,8 @@ class CategoryTab extends StatelessWidget {
           label,
           style: TextStyle(
             color: isSelected ? AppColors.primary : AppColors.textPrimary,
-            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+            fontSize: 17,
+            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
           ),
         ),
       ),

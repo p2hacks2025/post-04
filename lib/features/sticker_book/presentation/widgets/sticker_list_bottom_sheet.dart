@@ -95,7 +95,7 @@ class _StickerTabs extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.only(left: 0, right: 0),
+        padding: const EdgeInsets.only(left: 16, right: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
