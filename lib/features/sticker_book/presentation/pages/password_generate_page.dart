@@ -6,6 +6,8 @@ import '../../data/services/sticker_count_store.dart';
 // stickerMasterData と StickerData クラスが入っているファイルをインポート
 import '../../../../features/sticker_book/data/sticker_master.dart';
 import '../widgets/sticker_tile.dart';
+import '../../../../../core/utils/error_handler.dart';
+import '../../../../../core/constants/app_colors.dart';
 
 class PasswordGeneratePage extends StatefulWidget {
   const PasswordGeneratePage({super.key});
@@ -76,11 +78,14 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
       });
 
     } catch (e) {
+      // エラーが発生した場合、シールを戻す
       await _countStore.inc(targetSticker.assetPath);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラーが発生しました: $e')),
+        ErrorHandler.showErrorSnackBar(
+          context,
+          e,
+          onRetry: () => _generateAndSave(),
         );
       }
     } finally {
@@ -144,8 +149,8 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
                         child: Container(
                           decoration: BoxDecoration(
                             border: isSelected
-                                ? Border.all(color: Colors.orange, width: 4)
-                                : Border.all(color: Colors.grey.shade300),
+                                ? Border.all(color: AppColors.accentOrange, width: 4)
+                                : Border.all(color: AppColors.borderLight, width: 1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Stack(
@@ -167,18 +172,18 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: Colors.black54,
+                                    color: AppColors.shadowDark,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
                                     '×$count',
-                                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                                    style: const TextStyle(color: AppColors.textOnPrimary, fontSize: 12),
                                   ),
                                 ),
                               ),
                               if (isSelected)
                                 const Center(
-                                  child: Icon(Icons.check_circle, color: Colors.orange, size: 40),
+                                  child: Icon(Icons.check_circle, color: AppColors.accentOrange, size: 40),
                                 ),
                             ],
                           ),
@@ -197,11 +202,11 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
                     ? null
                     : _generateAndSave,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
+                  backgroundColor: AppColors.accentOrange,
+                  foregroundColor: AppColors.textOnPrimary,
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const CircularProgressIndicator(color: AppColors.textOnPrimary)
                     : const Text('あいことばを発行する', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             ),
@@ -234,18 +239,18 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
             const SizedBox(height: 10),
             Text(
               _generatedPassword!,
-              style: const TextStyle(
-                fontSize: 60,
-                fontWeight: FontWeight.bold,
-                color: Colors.orange,
-                letterSpacing: 8,
-              ),
+                  style: const TextStyle(
+                    fontSize: 60,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.accentOrange,
+                    letterSpacing: 8,
+                  ),
             ),
             const SizedBox(height: 30),
             const Text(
               '友達にこの番号を入力してもらってください。\n（あなたのシールは既になくなっています）',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 50),
             ElevatedButton(

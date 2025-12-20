@@ -52,12 +52,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   static const int _inventorySize = 20;
   static const int _pageCount = 4;
 
-  final List<List<Color>> _boardGradients = const [
-    [Color(0xFFD888FF), Color(0xFFF9C4E6)],
-    [Color(0xFFB2E0FF), Color(0xFFFBD3FF)],
-    [Color(0xFFFFE5B5), Color(0xFFF8C4E1)],
-    [Color(0xFFBFE3D0), Color(0xFFD8C8FF)],
-  ];
+  final List<List<Color>> _boardGradients = AppColors.stickerBookGradients;
 
   @override
   void initState() {
