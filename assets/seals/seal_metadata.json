@@ -11,6 +11,120 @@
       "name": "ほし",
       "rarity": 4,
       "size": 1
+    },
+    {
+      "assetPath": "assets/seals/circle_moti_holo.png",
+      "name": "circle_moti_holo",
+      "rarity": 1,
+      "size": 1
+    },
+    {
+      "assetPath": "assets/seals/circle_moti.png",
+      "name": "circle_moti",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/Fun_biled_holo.png",
+      "name": "Fun_biled_holo",
+      "rarity": 1,
+      "size": 3
+    },
+    {
+      "assetPath": "assets/seals/Fun_biled.png",
+      "name": "Fun_biled",
+      "rarity": 1,
+      "size": 1
+    },
+    {
+      "assetPath": "assets/seals/FUN_holo.png",
+      "name": "FUN_holo",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/FUN.png",
+      "name": "FUN",
+      "rarity": 1,
+      "size": 3
+    },
+    {
+      "assetPath": "assets/seals/hakodate_holo.png",
+      "name": "hakodate_holo",
+      "rarity": 1,
+      "size": 1
+    },
+    {
+      "assetPath": "assets/seals/hakodate.png",
+      "name": "hakodate",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/hosi copy.png",
+      "name": "hosi copy",
+      "rarity": 1,
+      "size": 3
+    },
+    {
+      "assetPath": "assets/seals/hosi_holo.png",
+      "name": "hosi_holo",
+      "rarity": 1,
+      "size": 1
+    },
+    {
+      "assetPath": "assets/seals/hurt_holo.png",
+      "name": "hurt_holo",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/hurt.png",
+      "name": "hurt",
+      "rarity": 1,
+      "size": 3
+    },
+    {
+      "assetPath": "assets/seals/love_holo.png",
+      "name": "love_holo",
+      "rarity": 1,
+      "size": 1
+    },
+    {
+      "assetPath": "assets/seals/love.png",
+      "name": "love",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/nikukyu_holo.png",
+      "name": "nikukyu_holo",
+      "rarity": 1,
+      "size": 3
+    },
+    {
+      "assetPath": "assets/seals/sikaku_daidai_holo.png",
+      "name": "sikaku_daidai_holo",
+      "rarity": 1,
+      "size": 1
+    },
+    {
+      "assetPath": "assets/seals/sikaku_daidai.png",
+      "name": "sikaku_daidai",
+      "rarity": 1,
+      "size": 2
+    },
+    {
+      "assetPath": "assets/seals/star_holo.png",
+      "name": "star_holo",
+      "rarity": 1,
+      "size": 3
+    },
+    {
+      "assetPath": "assets/seals/star.png",
+      "name": "star",
+      "rarity": 1,
+      "size": 1
     }
   ]
 }
