@@ -220,17 +220,17 @@ const List<StickerData> stickerMasterData = [
   StickerData(
     number: 30,
     id: 'star_holo_001',
-    name: 'スター（ホロ）',
-    assetPath: 'assets/seals/star_holo.glb',
-    iconPath: 'assets/seals/star_holo.png',
+    name: 'キラキラ（ホロ）',
+    assetPath: 'assets/seals/kira_holo.glb',
+    iconPath: 'assets/seals/kira_holo.png',
     rarity: 5,
   ),
   StickerData(
     number: 31,
     id: 'star_002',
-    name: 'スター',
-    assetPath: 'assets/seals/star.glb',
-    iconPath: 'assets/seals/star.png',
+    name: 'キラキラ',
+    assetPath: 'assets/seals/kira.glb',
+    iconPath: 'assets/seals/kira.png',
     rarity: 2,
   ),
   StickerData(
