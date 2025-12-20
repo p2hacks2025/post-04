@@ -79,7 +79,10 @@ class _TimelinePageState extends State<TimelinePage> {
                                           : Colors.black54,
                                       size: 20,
                                     ),
-                                    label: const Text('すてきだね'),
+                                    label: const Text(
+                                      'すてきだね',
+                                      style: TextStyle(fontWeight: FontWeight.w900),
+                                    ),
                                     style: TextButton.styleFrom(
                                       foregroundColor: Colors.black87,
                                       padding: const EdgeInsets.symmetric(

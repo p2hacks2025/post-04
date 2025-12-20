@@ -193,7 +193,12 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('あいことば入力')),
+      appBar: AppBar(
+        title: const Text(
+          'あいことば入力',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
