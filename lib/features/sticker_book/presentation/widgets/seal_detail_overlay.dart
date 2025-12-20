@@ -66,12 +66,12 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
   void _setupRotationIfNeeded() {
     if (_rotationController != null) return;
     _rotationController = AnimationController(
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 2),
       vsync: this,
     );
     _rotationAnimation = Tween<double>(
-      begin: -0.35,
-      end: 0.35,
+      begin: -0.6,
+      end: 0.6,
     ).animate(
       CurvedAnimation(
         parent: _rotationController!,
@@ -143,7 +143,7 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
                     height: 300,
                     margin: const EdgeInsets.symmetric(horizontal: 24),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8F9FA),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: ClipRRect(
@@ -156,8 +156,7 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
                                   alignment: Alignment.center,
                                   transform: Matrix4.identity()
                                     ..setEntry(3, 2, 0.001) // 遠近感
-                                    ..rotateY(_rotationAnimation!.value)
-                                    ..rotateZ(pi / 4),
+                                    ..rotateY(_rotationAnimation!.value),
                                   child: isGlb
                                       ? ModelViewer(
                                           src:
@@ -178,13 +177,10 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
                               },
                             )
                           : Center(
-                              child: Transform.rotate(
-                                angle: pi / 4,
-                                child: Image.asset(
-                                  _pngPath,
-                                  fit: BoxFit.contain,
-                                  filterQuality: FilterQuality.high,
-                                ),
+                              child: Image.asset(
+                                _pngPath,
+                                fit: BoxFit.contain,
+                                filterQuality: FilterQuality.high,
                               ),
                             ),
                     ),
