@@ -16,8 +16,6 @@ class StickerData {
   });
 }
 
-// 今あるアセット（assets/seals/*.glb）を使った暫定のマスターデータ。
-// アイコン画像が無いものは assetPath と同一にしています（GLBがそのまま表示されます）。
 const List<StickerData> stickerMasterData = [
   StickerData(
     number: 5,
@@ -25,7 +23,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ハート（ブルーホロ）',
     assetPath: 'assets/seals/hurt_blue_holo.glb',
     iconPath: 'assets/seals/hurt_blue_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 6,
@@ -33,7 +31,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ハート（グリーンホロ）',
     assetPath: 'assets/seals/hurt_gre_holo.glb',
     iconPath: 'assets/seals/hurt_gre_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 7,
@@ -41,7 +39,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ハート（ピンクホロ）',
     assetPath: 'assets/seals/hurt_pink_holo.glb',
     iconPath: 'assets/seals/hurt_pink_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 8,
@@ -49,7 +47,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ハート（パープルホロ）',
     assetPath: 'assets/seals/hurt_pur_holo.glb',
     iconPath: 'assets/seals/hurt_pur_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 9,
@@ -57,7 +55,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ハート（イエローホロ）',
     assetPath: 'assets/seals/hurt_yell_holo.glb',
     iconPath: 'assets/seals/hurt_yell_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 10,
@@ -65,7 +63,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ほし（ブラック）',
     assetPath: 'assets/seals/hosi_black.glb',
     iconPath: 'assets/seals/hosi_black.png',
-    rarity: 3,
+    rarity: 1,
   ),
   StickerData(
     number: 11,
@@ -73,7 +71,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ほし（ブルー）',
     assetPath: 'assets/seals/hosi_blue.glb',
     iconPath: 'assets/seals/hosi_blue.png',
-    rarity: 3,
+    rarity: 1,
   ),
   StickerData(
     number: 12,
@@ -81,7 +79,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ほし（オレンジ）',
     assetPath: 'assets/seals/hosi_oren.glb',
     iconPath: 'assets/seals/hosi_oren.png',
-    rarity: 3,
+    rarity: 1,
   ),
   StickerData(
     number: 13,
@@ -89,7 +87,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ほし（ピンク）',
     assetPath: 'assets/seals/hosi_pink.glb',
     iconPath: 'assets/seals/hosi_pink.png',
-    rarity: 3,
+    rarity: 1,
   ),
   StickerData(
     number: 14,
@@ -97,7 +95,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ハート（ブルー）',
     assetPath: 'assets/seals/hurt_blue.glb',
     iconPath: 'assets/seals/hurt_blue.png',
-    rarity: 2,
+    rarity: 1,
   ),
   StickerData(
     number: 15,
@@ -105,7 +103,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ハート（グリーン）',
     assetPath: 'assets/seals/hurt_gre.glb',
     iconPath: 'assets/seals/hurt_gre.png',
-    rarity: 2,
+    rarity: 1,
   ),
   StickerData(
     number: 16,
@@ -113,7 +111,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ハート（ピンク）',
     assetPath: 'assets/seals/hurt_pink.glb',
     iconPath: 'assets/seals/hurt_pink.png',
-    rarity: 2,
+    rarity: 1,
   ),
   StickerData(
     number: 17,
@@ -121,7 +119,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ハート（パープル）',
     assetPath: 'assets/seals/hurt_pur.glb',
     iconPath: 'assets/seals/hurt_pur.png',
-    rarity: 2,
+    rarity: 1,
   ),
   StickerData(
     number: 18,
@@ -129,20 +127,20 @@ const List<StickerData> stickerMasterData = [
     name: 'ハート（イエロー）',
     assetPath: 'assets/seals/hurt_yell.glb',
     iconPath: 'assets/seals/hurt_yell.png',
-    rarity: 2,
+    rarity: 1,
   ),
   StickerData(
     number: 19,
     id: 'fun_biled_holo_001',
-    name: 'FUNバイレッド（ホロ）',
+    name: 'FUN バイレッド（ホロ）',
     assetPath: 'assets/seals/Fun_biled_holo.glb',
     iconPath: 'assets/seals/Fun_biled_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 20,
     id: 'fun_biled_001',
-    name: 'FUNバイレッド',
+    name: 'FUN バイレッド',
     assetPath: 'assets/seals/Fun_biled.glb',
     iconPath: 'assets/seals/Fun_biled.png',
     rarity: 3,
@@ -153,7 +151,7 @@ const List<StickerData> stickerMasterData = [
     name: 'FUN（ホロ）',
     assetPath: 'assets/seals/FUN_holo.glb',
     iconPath: 'assets/seals/FUN_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 22,
@@ -166,15 +164,15 @@ const List<StickerData> stickerMasterData = [
   StickerData(
     number: 23,
     id: 'hakodate_holo_001',
-    name: '函館（ホロ）',
+    name: 'はこだて（ホロ）',
     assetPath: 'assets/seals/hakodate_holo.glb',
     iconPath: 'assets/seals/hakodate_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 24,
     id: 'hakodate_001',
-    name: '函館',
+    name: 'はこだて',
     assetPath: 'assets/seals/hakodate.glb',
     iconPath: 'assets/seals/hakodate.png',
     rarity: 3,
@@ -193,7 +191,7 @@ const List<StickerData> stickerMasterData = [
     name: 'LOVE（ホロ）',
     assetPath: 'assets/seals/love_holo.glb',
     iconPath: 'assets/seals/love_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 27,
@@ -201,23 +199,23 @@ const List<StickerData> stickerMasterData = [
     name: 'LOVE',
     assetPath: 'assets/seals/love.glb',
     iconPath: 'assets/seals/love.png',
-    rarity: 3,
+    rarity: 4,
   ),
   StickerData(
     number: 28,
     id: 'nikukyu_holo_001',
-    name: '肉球（ホロ）',
+    name: 'にくきゅう（ホロ）',
     assetPath: 'assets/seals/nikukyu_holo.glb',
     iconPath: 'assets/seals/nikukyu_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 29,
     id: 'nikukyu_001',
-    name: '肉球',
+    name: 'にくきゅう',
     assetPath: 'assets/seals/nikukyu.glb',
     iconPath: 'assets/seals/nikukyu.png',
-    rarity: 3,
+    rarity: 4,
   ),
   StickerData(
     number: 30,
@@ -225,7 +223,7 @@ const List<StickerData> stickerMasterData = [
     name: 'スター（ホロ）',
     assetPath: 'assets/seals/star_holo.glb',
     iconPath: 'assets/seals/star_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 31,
@@ -233,7 +231,7 @@ const List<StickerData> stickerMasterData = [
     name: 'スター',
     assetPath: 'assets/seals/star.glb',
     iconPath: 'assets/seals/star.png',
-    rarity: 3,
+    rarity: 2,
   ),
   StickerData(
     number: 32,
@@ -241,7 +239,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ハート（ホロ）',
     assetPath: 'assets/seals/hurt_holo.glb',
     iconPath: 'assets/seals/hurt_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
   StickerData(
     number: 33,
@@ -249,7 +247,7 @@ const List<StickerData> stickerMasterData = [
     name: 'ほし',
     assetPath: 'assets/seals/hosi.glb',
     iconPath: 'assets/seals/hosi.png',
-    rarity: 3,
+    rarity: 1,
   ),
   StickerData(
     number: 34,
@@ -257,6 +255,6 @@ const List<StickerData> stickerMasterData = [
     name: 'ほし（ホロ）',
     assetPath: 'assets/seals/hosi_holo.glb',
     iconPath: 'assets/seals/hosi_holo.png',
-    rarity: 3,
+    rarity: 5,
   ),
 ];
