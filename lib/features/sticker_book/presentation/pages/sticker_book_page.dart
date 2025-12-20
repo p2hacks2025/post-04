@@ -23,7 +23,7 @@ class StickerBookPage extends StatefulWidget {
 }
 
 class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingObserver {
-  final List<String> _categories = const ['すべて', 'どうぶつ', 'のりもの', 'たべもの'];
+  final List<String> _categories = const ['すべて', 'マーク', 'はこだて', 'ほか'];
   int _selectedCategoryIndex = 0;
 
   final List<StickerData> _catalog = stickerMasterData;

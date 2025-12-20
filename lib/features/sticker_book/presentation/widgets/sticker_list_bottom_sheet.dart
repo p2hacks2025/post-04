@@ -53,6 +53,7 @@ class StickerListBottomSheet extends StatelessWidget {
                 child: _StickerGridArea(
                   scrollController: scrollController,
                   inventorySlots: inventorySlots,
+                  selectedCategoryIndex: selectedIndex,
                   onTapSticker: onTapSticker,
                   onShowDetail: (assetPath) {
                     showDialog(
@@ -115,6 +116,7 @@ class _StickerGridArea extends StatelessWidget {
   const _StickerGridArea({
     required this.scrollController,
     required this.inventorySlots,
+    required this.selectedCategoryIndex,
     required this.onTapSticker,
     required this.onShowDetail,
     required this.onDropSticker,
@@ -123,15 +125,62 @@ class _StickerGridArea extends StatelessWidget {
 
   final ScrollController scrollController;
   final List<String?> inventorySlots;
+  final int selectedCategoryIndex;
   final void Function(String asset, int slotIndex) onTapSticker;
   final void Function(String assetPath) onShowDetail;
   final void Function(InventoryPayload payload, Offset globalPosition)
   onDropSticker;
   final String Function(String assetPath)? displayAssetResolver;
 
+  /// アセットパスからファイル名を取得
+  String _getFileName(String assetPath) {
+    final fileName = assetPath.split('/').last;
+    final lastDotIndex = fileName.lastIndexOf('.');
+    return lastDotIndex >= 0 ? fileName.substring(0, lastDotIndex) : fileName;
+  }
+
+  /// アセットがカテゴリに一致するかチェック
+  bool _matchesCategory(String asset, int categoryIndex) {
+    final fileName = _getFileName(asset).toLowerCase();
+
+    switch (categoryIndex) {
+      case 1: // マーク：heart*, star*, kira*で始まるもの
+        return fileName.startsWith('heart') ||
+            fileName.startsWith('star') ||
+            fileName.startsWith('kira');
+
+      case 2: // はこだて：FUN, hakodateが含まれるもの
+        return fileName.contains('fun') || fileName.contains('hakodate');
+
+      case 3: // ほか：上記以外のもの
+        final isMark =
+            fileName.startsWith('heart') ||
+            fileName.startsWith('star') ||
+            fileName.startsWith('kira');
+        final isHakodate =
+            fileName.contains('fun') || fileName.contains('hakodate');
+        return !isMark && !isHakodate;
+
+      default:
+        return true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final visibleStickers = List<String?>.from(inventorySlots);
+    final filteredAssets = <String?>[];
+    final originalIndices = <int>[];
+    for (var i = 0; i < inventorySlots.length; i++) {
+      final asset = inventorySlots[i];
+      if (asset == null) {
+        continue;
+      }
+      if (selectedCategoryIndex == 0 ||
+          _matchesCategory(asset, selectedCategoryIndex)) {
+        filteredAssets.add(asset);
+        originalIndices.add(i);
+      }
+    }
 
     return Stack(
       clipBehavior: Clip.hardEdge,
@@ -151,16 +200,17 @@ class _StickerGridArea extends StatelessWidget {
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
           ),
-          itemCount: visibleStickers.length,
+          itemCount: filteredAssets.length,
           itemBuilder: (context, index) {
-            final asset = visibleStickers[index];
+            final asset = filteredAssets[index];
+            final originalIndex = originalIndices[index];
             final displayAsset = (asset != null && displayAssetResolver != null)
                 ? displayAssetResolver!(asset)
                 : asset;
             return _InventoryStickerTile(
               assetPath: asset,
               displayAssetPath: displayAsset,
-              slotIndex: index,
+              slotIndex: originalIndex,
               onTap: asset != null ? () => onShowDetail(asset) : null,
               onDropSticker: onDropSticker,
             );
