@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Seal App',
       theme: _buildTheme(),
+      debugShowCheckedModeBanner: false,
       home: const MainScreen(),
     );
   }
