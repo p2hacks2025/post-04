@@ -1,8 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../nameplate/data/repositories/nameplate_storage.dart';
-import '../../../nameplate/domain/constants/nameplate_constants.dart';
 import '../../../nameplate/domain/models/models.dart';
 import '../../../nameplate/presentation/widgets/nameplate_preview.dart';
 import '../../data/repositories/public_board_repository.dart';
@@ -31,23 +29,9 @@ class _TimelinePageState extends State<TimelinePage> {
     setState(() => _myNameplate = saved);
   }
 
-  NameplateData _fallbackNameplate() {
-    return NameplateData(
-      shape: NameplateShape.roundedSquare,
-      backgroundColor: NameplateColors.backgroundColors[0],
-      name: '',
-      fontType: FontType.rounded,
-      textColor: const Color(0xFFFF6FAE),
-      hasOutline: true,
-      hasShadow: true,
-      decorations: const [],
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-    final myNp = _myNameplate ?? _fallbackNameplate();
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8F0),
@@ -61,27 +45,6 @@ class _TimelinePageState extends State<TimelinePage> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Text('あなたのネームプレート', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-            SizedBox(height: 160, child: NameplatePreview(data: myNp)),
-            const SizedBox(height: 16),
-            const SizedBox(height: 10),
-            StreamBuilder(
-              stream: _repo.streamByUid(uid),
-              builder: (context, snapshot) {
-                final posts = snapshot.data ?? const [];
-                return Column(
-                  children: [
-                    for (final p in posts) ...[
-                      StickerBoardSnapshotWidget(snapshot: p.board),
-                      const SizedBox(height: 12),
-                    ],
-                  ],
-                );
-              },
-            ),
-            const Divider(height: 32),
-            const Text('タイムライン', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             StreamBuilder(
               stream: _repo.streamAll(limit: 50),
@@ -143,6 +106,7 @@ class _TimelinePageState extends State<TimelinePage> {
                 );
               },
             ),
+            const SizedBox(height: 80),
           ],
         ),
       ),
