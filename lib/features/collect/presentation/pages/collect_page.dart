@@ -11,24 +11,33 @@ class CollectPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('あつめる'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: Center(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _CollectButton(
+            _MenuCardButton(
+              icon: Icons.casino,
               label: 'ガチャであつめる',
-              onPressed: () {
+              color: AppColors.accentOrange,
+              onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const GachaPage()),
                 );
               },
             ),
-            const SizedBox(height: 12),
-            _CollectButton(
+            const SizedBox(height: 40),
+            _MenuCardButton(
+              icon: Icons.swap_horiz,
               label: '交換であつめる',
-              onPressed: () {
-                // 交換メニューへ遷移（QR生成/読み取りなど）
+              color: AppColors.accentBlue,
+              onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -44,25 +53,48 @@ class CollectPage extends StatelessWidget {
   }
 }
 
-class _CollectButton extends StatelessWidget {
-  const _CollectButton({required this.label, required this.onPressed});
+class _MenuCardButton extends StatelessWidget {
+  const _MenuCardButton({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
 
+  final IconData icon;
   final String label;
-  final VoidCallback onPressed;
+  final Color color;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.textOnPrimary,
-        shape: const StadiumBorder(),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        elevation: 0,
-        textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        width: 220,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color, width: 2),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, size: 60, color: color),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
-      onPressed: onPressed,
-      child: Text(label),
     );
   }
 }
