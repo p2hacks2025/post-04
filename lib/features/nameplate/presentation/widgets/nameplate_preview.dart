@@ -61,7 +61,10 @@ class _NameplateCardState extends State<_NameplateCard> {
   }
 
   void _loadImageAspectRatio() {
-    final imagePath = _getBackgroundImagePath(widget.data.shape, widget.data.backgroundColor);
+    final imagePath = _getBackgroundImagePath(
+      widget.data.shape,
+      widget.data.backgroundColor,
+    );
     final imageProvider = AssetImage(imagePath);
     _imageStream = imageProvider.resolve(const ImageConfiguration());
     _imageStreamListener = ImageStreamListener((ImageInfo info, bool _) {
@@ -76,9 +79,12 @@ class _NameplateCardState extends State<_NameplateCard> {
 
   @override
   Widget build(BuildContext context) {
-    final imagePath = _getBackgroundImagePath(widget.data.shape, widget.data.backgroundColor);
+    final imagePath = _getBackgroundImagePath(
+      widget.data.shape,
+      widget.data.backgroundColor,
+    );
     final aspectRatio = _imageAspectRatio ?? 3.0;
-    
+
     return Padding(
       padding: const EdgeInsets.only(top: 8, left: 16, right: 16),
       child: AspectRatio(
@@ -88,7 +94,10 @@ class _NameplateCardState extends State<_NameplateCard> {
           constraints: const BoxConstraints(maxWidth: 400),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final cardSize = Size(constraints.maxWidth, constraints.maxHeight);
+              final cardSize = Size(
+                constraints.maxWidth,
+                constraints.maxHeight,
+              );
               return Stack(
                 children: [
                   Positioned.fill(
@@ -100,16 +109,19 @@ class _NameplateCardState extends State<_NameplateCard> {
                       },
                     ),
                   ),
-                  ...widget.data.decorations.map((dec) => _DecorationWidget(
-                        decoration: dec,
-                        cardSize: cardSize,
-                        onMoved: widget.onDecorationMoved != null
-                            ? (id, position) => widget.onDecorationMoved!(id, position)
-                            : null,
-                        onRemoved: widget.onDecorationRemoved != null
-                            ? (id) => widget.onDecorationRemoved!(id)
-                            : null,
-                      )),
+                  ...widget.data.decorations.map(
+                    (dec) => _DecorationWidget(
+                      decoration: dec,
+                      cardSize: cardSize,
+                      onMoved: widget.onDecorationMoved != null
+                          ? (id, position) =>
+                                widget.onDecorationMoved!(id, position)
+                          : null,
+                      onRemoved: widget.onDecorationRemoved != null
+                          ? (id) => widget.onDecorationRemoved!(id)
+                          : null,
+                    ),
+                  ),
                   IgnorePointer(
                     child: Center(
                       child: Padding(
@@ -140,7 +152,6 @@ class _NameplateCardState extends State<_NameplateCard> {
   String _getBackgroundImagePath(NameplateShape shape, Color backgroundColor) {
     return 'assets/name-plates/name-plate-pink.png';
   }
-
 }
 
 class _NameText extends StatelessWidget {
@@ -163,9 +174,10 @@ class _NameText extends StatelessWidget {
     if (name.isEmpty) {
       return Text(
         'なまえ',
-        style: _getTextStyle(fontType, 24).copyWith(
-          color: const Color(0xFFFF6FAE),
-        ),
+        style: _getTextStyle(
+          fontType,
+          24,
+        ).copyWith(color: const Color(0xFFFF6FAE)),
       );
     }
 
@@ -246,10 +258,14 @@ class _DecorationWidgetState extends State<_DecorationWidget> {
   @override
   Widget build(BuildContext context) {
     final halfSize = widget.decoration.size / 2;
-    final clampedX = widget.decoration.position.dx
-        .clamp(halfSize, widget.cardSize.width - halfSize);
-    final clampedY = widget.decoration.position.dy
-        .clamp(halfSize, widget.cardSize.height - halfSize);
+    final clampedX = widget.decoration.position.dx.clamp(
+      halfSize,
+      widget.cardSize.width - halfSize,
+    );
+    final clampedY = widget.decoration.position.dy.clamp(
+      halfSize,
+      widget.cardSize.height - halfSize,
+    );
 
     return Positioned(
       left: clampedX - halfSize,
@@ -261,11 +277,19 @@ class _DecorationWidgetState extends State<_DecorationWidget> {
                 if (renderBox == null) return;
                 final stackBox = renderBox.parent as RenderBox?;
                 if (stackBox == null) return;
-                final localPosition = stackBox.globalToLocal(details.globalPosition);
+                final localPosition = stackBox.globalToLocal(
+                  details.globalPosition,
+                );
                 final halfSize = widget.decoration.size / 2;
                 final clampedPosition = Offset(
-                  localPosition.dx.clamp(halfSize, widget.cardSize.width - halfSize),
-                  localPosition.dy.clamp(halfSize, widget.cardSize.height - halfSize),
+                  localPosition.dx.clamp(
+                    halfSize,
+                    widget.cardSize.width - halfSize,
+                  ),
+                  localPosition.dy.clamp(
+                    halfSize,
+                    widget.cardSize.height - halfSize,
+                  ),
                 );
                 widget.onMoved!(widget.decoration.id, clampedPosition);
               }
@@ -290,6 +314,7 @@ class _DecorationWidgetState extends State<_DecorationWidget> {
       assetPath: type.assetPath,
       size: widget.decoration.size,
       showShadow: false,
+      forceStaticImage: true,
     );
   }
 }
