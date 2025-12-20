@@ -68,6 +68,7 @@ class StickerListBottomSheet extends StatelessWidget {
                   displayAssetResolver: displayAssetResolver,
                 ),
               ),
+              const SizedBox(height: 90),
             ],
           ),
         );
