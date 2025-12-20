@@ -62,6 +62,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
+        top: false,
         child: Stack(
           children: [
             IndexedStack(index: _selectedIndex, children: _pages),
