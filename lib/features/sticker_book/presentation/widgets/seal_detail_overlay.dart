@@ -169,16 +169,18 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
                                     ..setEntry(3, 2, 0.001) // 遠近感
                                     ..rotateY(_rotationAnimation!.value),
                                   child: isGlb
-                                      ? ModelViewer(
-                                          src: StickerCatalog.glbPathForPng(
-                                            _pngPath,
+                                      ? IgnorePointer(
+                                          child: ModelViewer(
+                                            src: StickerCatalog.glbPathForPng(
+                                              _pngPath,
+                                            ),
+                                            alt: '3D sticker',
+                                            autoRotate: false,
+                                            disableZoom: true,
+                                            cameraControls: false,
+                                            backgroundColor: Colors.transparent,
+                                            interactionPrompt: InteractionPrompt.none,
                                           ),
-                                          alt: '3D sticker',
-                                          autoRotate: false,
-                                          disableZoom: true,
-                                          cameraControls: false,
-                                          backgroundColor: Colors.transparent,
-                                          interactionPrompt: InteractionPrompt.none,
                                         )
                                       : Image.asset(
                                           _pngPath,

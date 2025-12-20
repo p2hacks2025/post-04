@@ -14,43 +14,27 @@ class StickerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final boxShadow = showShadow
-        ? [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 6,
-              spreadRadius: 0,
-              offset: const Offset(0, 2),
-            ),
-          ]
-        : <BoxShadow>[];
-    final bgColor = showShadow ? Colors.white : Colors.transparent;
-    final padding = const EdgeInsets.all(8);
+    const boxShadow = <BoxShadow>[];
+    final padding = const EdgeInsets.all(0);
 
     final child = _buildContent();
     final decoration = BoxDecoration(
-      color: bgColor,
       borderRadius: BorderRadius.circular(12),
       boxShadow: boxShadow,
     );
 
-    if (size != null) {
-      return Container(
-        width: size,
-        height: size,
-        decoration: decoration,
-        padding: padding,
-        alignment: Alignment.center,
-        child: child,
-      );
-    }
-
-    return Container(
+    final content = Container(
       decoration: decoration,
       padding: padding,
       alignment: Alignment.center,
       child: child,
     );
+
+    if (size != null) {
+      return SizedBox(width: size, height: size, child: content);
+    }
+
+    return content;
   }
 
   Widget _buildContent() {
