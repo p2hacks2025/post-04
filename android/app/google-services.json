@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "946367823238",
+    "project_id": "sealapp-aa361",
+    "storage_bucket": "sealapp-aa361.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:946367823238:android:90220ef5ef16617a768007",
+        "android_client_info": {
+          "package_name": "com.example.seal_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUpmbRjtu_y_J_Ie3nGR_E5LE06DG1Y7w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
