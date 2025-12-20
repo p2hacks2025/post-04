@@ -22,7 +22,6 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
   bool _isStoreReady = false;
 
   bool _isLoading = false;
-  String? _statusMessage;
 
   @override
   void initState() {
@@ -73,7 +72,6 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
 
     setState(() {
       _isLoading = true;
-      _statusMessage = null;
     });
 
     try {
@@ -83,10 +81,9 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
           .where('password', isEqualTo: inputPassword)
           .get();
 
+      if (!mounted) return;
+
       if (snapshot.docs.isEmpty) {
-        setState(() {
-          _statusMessage = null;
-        });
         ErrorHandler.showWarningSnackBar(
           context,
           'そのあいことばは見つかりませんでした\nもう一度確認してください',
@@ -103,9 +100,7 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
       final String? assetPath = (data['sticker_id'] as String?)?.trim();
 
       if (assetPath == null || assetPath.isEmpty) {
-        setState(() {
-          _statusMessage = null;
-        });
+        if (!mounted) return;
         ErrorHandler.showErrorSnackBar(context, 'あいことばは使用済みか無効です');
         return;
       }
@@ -135,7 +130,11 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.check_circle, color: AppColors.success, size: 60),
+              const Icon(
+                Icons.check_circle,
+                color: AppColors.success,
+                size: 60,
+              ),
               const SizedBox(height: 12),
               Text('「$displayName」を受け取りました！'),
               const SizedBox(height: 12),
@@ -163,9 +162,7 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
         ),
       );
     } catch (e) {
-      setState(() {
-        _statusMessage = null;
-      });
+      if (!mounted) return;
       ErrorHandler.showErrorSnackBar(
         context,
         e,

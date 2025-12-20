@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../../../core/constants/app_colors.dart';
 
 import '../../domain/models/models.dart';
 import '../../data/repositories/sticker_book_data.dart';
