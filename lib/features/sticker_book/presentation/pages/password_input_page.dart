@@ -108,6 +108,7 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
       final sticker = _findStickerByAssetPath(assetPath);
       final displayName = sticker?.name ?? 'シール';
       final displayPath = sticker?.iconPath ?? assetPath;
+      final rarity = sticker?.rarity;
 
       // 3. 自分のシール帳に +1 する
       await _countStore.inc(assetPath);
@@ -147,6 +148,11 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
                   useModelViewer: false,
                 ),
               ),
+              const SizedBox(height: 12),
+              if (rarity != null) ...[
+                const SizedBox(height: 8),
+                _RarityStars(rarity: rarity.clamp(1, 5)),
+              ],
               const SizedBox(height: 8),
             ],
           ),
@@ -227,6 +233,27 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RarityStars extends StatelessWidget {
+  const _RarityStars({required this.rarity});
+
+  final int rarity;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(5, (i) {
+        final filled = i < rarity;
+        return Icon(
+          filled ? Icons.star : Icons.star_border,
+          size: 18,
+          color: filled ? AppColors.accentOrange : AppColors.borderLight,
+        );
+      }),
     );
   }
 }
