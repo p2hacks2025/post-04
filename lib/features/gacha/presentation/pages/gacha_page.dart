@@ -228,16 +228,19 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
                 ),
               ),
               const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: canStart ? () => _startGacha() : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.textOnPrimary,
-                  shape: const StadiumBorder(),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: canStart ? () => _startGacha() : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.textOnPrimary,
+                    shape: const StadiumBorder(),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    textStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                  ),
+                  child: Text(isAnimating ? '抽選中...' : 'ガチャをひく'),
                 ),
-                child: Text(isAnimating ? '抽選中...' : 'ガチャをひく'),
               ),
             ],
           ),
