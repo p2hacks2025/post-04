@@ -51,60 +51,61 @@ class _TimelinePageState extends State<TimelinePage> {
 
                 return Column(
                   children: [
-                    for (final p in posts) ...[
-                      Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                    for (var i = 0; i < posts.length; i++) ...[
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SizedBox(
+                            height: 140,
+                            child: NameplatePreview(data: posts[i].nameplate),
+                          ),
+                          const SizedBox(height: 10),
+                          StickerBoardSnapshotWidget(snapshot: posts[i].board),
+                          const SizedBox(height: 10),
+                          Row(
                             children: [
-                              SizedBox(
-                                height: 140,
-                                child: NameplatePreview(data: p.nameplate),
-                              ),
-                              const SizedBox(height: 10),
-                              StickerBoardSnapshotWidget(snapshot: p.board),
-                              const SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  StreamBuilder<bool>(
-                                    stream: _repo.streamIsLiked(p.id),
-                                    builder: (context, likeSnap) {
-                                      final liked = likeSnap.data ?? false;
-                                      return IconButton(
-                                        onPressed: () => _repo.toggleLike(p.id),
-                                        icon: Icon(
-                                          liked
-                                              ? Icons.favorite
-                                              : Icons.favorite_border,
-                                          color: liked
-                                              ? Colors.pink
-                                              : Colors.black54,
-                                        ),
-                                        tooltip: liked ? 'いいね済み' : 'いいね',
-                                      );
-                                    },
-                                  ),
-                                  Text('${p.likeCount}'),
-                                  const Spacer(),
-                                  Text(
-                                    'page ${p.page + 1}',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.black54,
+                              StreamBuilder<bool>(
+                                stream: _repo.streamIsLiked(posts[i].id),
+                                builder: (context, likeSnap) {
+                                  final liked = likeSnap.data ?? false;
+                                  return IconButton(
+                                    onPressed: () => _repo.toggleLike(posts[i].id),
+                                    icon: Icon(
+                                      liked
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: liked
+                                          ? Colors.pink
+                                          : Colors.black54,
                                     ),
-                                  ),
-                                ],
+                                    tooltip: liked ? 'いいね済み' : 'いいね',
+                                  );
+                                },
+                              ),
+                              Text('${posts[i].likeCount}'),
+                              const Spacer(),
+                              Text(
+                                'page ${posts[i].page + 1}',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black54,
+                                ),
                               ),
                             ],
                           ),
-                        ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
+                      if (i < posts.length - 1) ...[
+                        const SizedBox(height: 24),
+                        Divider(
+                          height: 1,
+                          thickness: 1,
+                          color: Colors.grey.withValues(alpha: 0.2),
+                          indent: 16,
+                          endIndent: 16,
+                        ),
+                        const SizedBox(height: 24),
+                      ],
                     ],
                   ],
                 );
