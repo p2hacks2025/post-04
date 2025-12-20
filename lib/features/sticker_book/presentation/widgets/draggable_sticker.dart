@@ -20,8 +20,13 @@ class PlacedStickerWidget extends StatelessWidget {
   final bool isSelected;
   final GlobalKey boardKey;
   final void Function(String id) onSelect;
-  final void Function(String id, Offset position, double rotation, Size boardSize)
-      onUpdate;
+  final void Function(
+    String id,
+    Offset position,
+    double rotation,
+    Size boardSize,
+  )
+  onUpdate;
   final Future<void> Function(String id) onRemove;
   final ValueChanged<bool> onInteractionToggle;
 
@@ -59,8 +64,13 @@ class DraggableSticker extends StatefulWidget {
   final bool isSelected;
   final GlobalKey boardKey;
   final void Function(String id) onSelect;
-  final void Function(String id, Offset position, double rotation, Size boardSize)
-      onUpdate;
+  final void Function(
+    String id,
+    Offset position,
+    double rotation,
+    Size boardSize,
+  )
+  onUpdate;
   final Future<void> Function(String id) onRemove;
   final ValueChanged<bool> onInteractionToggle;
 
@@ -108,14 +118,14 @@ class _DraggableStickerState extends State<DraggableSticker> {
         if (renderBox == null) return;
         final deltaPosition = details.focalPoint - _dragStartOffset;
         final newPos = widget.sticker.position + deltaPosition;
-        
+
         // 選択中のみ回転を適用
         double newRotation = _localRotation;
         if (widget.isSelected) {
           final rotationDelta = details.rotation - _lastRotation;
           newRotation += rotationDelta;
         }
-        
+
         _dragStartOffset = details.focalPoint;
         _lastRotation = details.rotation;
         setState(() {
@@ -135,9 +145,10 @@ class _DraggableStickerState extends State<DraggableSticker> {
           Transform.rotate(
             angle: _localRotation,
             child: StickerTile(
-                assetPath: displayPath,
+              assetPath: displayPath,
               size: widget.sticker.size.width,
               useModelViewer: isGlb,
+              showBackground: false,
             ),
           ),
           if (widget.isSelected) ...[
@@ -186,12 +197,7 @@ class _ActionBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: Icon(
-        icon,
-        size: 16,
-        color: Colors.white,
-      ),
+      child: Icon(icon, size: 16, color: Colors.white),
     );
   }
 }
-
