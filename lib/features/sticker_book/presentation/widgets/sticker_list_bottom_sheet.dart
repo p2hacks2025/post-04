@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../domain/models/models.dart';
+import 'package:seal_app/core/constants/app_colors.dart';
 import 'package:seal_app/core/widgets/category_tab.dart';
 import 'package:seal_app/core/widgets/grid_background.dart';
 import 'seal_detail_overlay.dart';
@@ -18,6 +19,7 @@ class StickerListBottomSheet extends StatelessWidget {
     required this.onTapSticker,
     required this.onDropSticker,
     this.displayAssetResolver,
+    this.countResolver,
   });
 
   final List<String> categories;
@@ -29,6 +31,7 @@ class StickerListBottomSheet extends StatelessWidget {
   final void Function(InventoryPayload payload, Offset globalPosition)
   onDropSticker;
   final String Function(String assetPath)? displayAssetResolver;
+  final int Function(String assetPath)? countResolver;
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +73,7 @@ class StickerListBottomSheet extends StatelessWidget {
                   },
                   onDropSticker: onDropSticker,
                   displayAssetResolver: displayAssetResolver,
+                  countResolver: countResolver,
                 ),
               ),
               const SizedBox(height: 90),
@@ -126,6 +130,7 @@ class _StickerGridArea extends StatelessWidget {
     required this.onShowDetail,
     required this.onDropSticker,
     this.displayAssetResolver,
+    this.countResolver,
   });
 
   final ScrollController scrollController;
@@ -137,6 +142,7 @@ class _StickerGridArea extends StatelessWidget {
   final void Function(InventoryPayload payload, Offset globalPosition)
   onDropSticker;
   final String Function(String assetPath)? displayAssetResolver;
+  final int Function(String assetPath)? countResolver;
 
   /// アセットパスからファイル名を取得
   String _getFileName(String assetPath) {
@@ -223,6 +229,7 @@ class _StickerGridArea extends StatelessWidget {
               slotIndex: masterIndex,
               onTap: asset != null ? () => onShowDetail(asset) : null,
               onDropSticker: onDropSticker,
+              countResolver: countResolver,
             );
           },
         ),
@@ -238,6 +245,7 @@ class _InventoryStickerTile extends StatefulWidget {
     required this.slotIndex,
     required this.onTap,
     required this.onDropSticker,
+    this.countResolver,
   });
 
   final String? assetPath;
@@ -246,6 +254,7 @@ class _InventoryStickerTile extends StatefulWidget {
   final VoidCallback? onTap;
   final void Function(InventoryPayload payload, Offset globalPosition)
   onDropSticker;
+  final int Function(String assetPath)? countResolver;
 
   @override
   State<_InventoryStickerTile> createState() => _InventoryStickerTileState();
@@ -306,12 +315,39 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
     final assetPath = widget.assetPath!; // 本体（配置に使う）
     final tileAssetPath = widget.displayAssetPath ?? assetPath; // 表示に使う
     final isGlb = tileAssetPath.toLowerCase().endsWith('.glb');
+    final count = widget.countResolver?.call(assetPath) ?? 0;
 
     final tile = StickerTile(
       assetPath: tileAssetPath,
       forceStaticImage: false,
       useModelViewer: isGlb,
       showBackground: false,
+    );
+
+    final tileWithCount = Stack(
+      children: [
+        Positioned.fill(child: tile),
+        if (count > 0)
+          Positioned(
+            right: 6,
+            bottom: 6,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.shadowDark,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '×$count',
+                style: const TextStyle(
+                  color: AppColors.textOnPrimary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
 
     return GestureDetector(
@@ -338,7 +374,7 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
         setState(() {});
         widget.onDropSticker(payload, dropPosition);
       },
-      child: Opacity(opacity: _isDragging ? 0.5 : 1, child: tile),
+      child: Opacity(opacity: _isDragging ? 0.5 : 1, child: tileWithCount),
     );
   }
 }
