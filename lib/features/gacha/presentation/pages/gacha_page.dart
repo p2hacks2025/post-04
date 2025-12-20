@@ -287,10 +287,22 @@ class _ResultCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('No.${sticker.number}  ${sticker.name}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              StickerTile(assetPath: displayPath, size: 160, useModelViewer: isGlb),
-              const SizedBox(height: 8),
+              Text(
+                'No.${sticker.number}  ${sticker.name}',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              StickerTile(
+                assetPath: displayPath,
+                size: 160,
+                useModelViewer: isGlb,
+              ),
+              const SizedBox(height: 10),
+              _RarityStars(rarity: sticker.rarity.clamp(1, 5)),
+              const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
@@ -312,7 +324,7 @@ class _ResultCard extends StatelessWidget {
                   OutlinedButton(onPressed: onClose, child: const Text('とじる')),
                   ElevatedButton(
                     onPressed: onAgain,
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color.fromARGB(255, 255, 255, 255)),
                     child: const Text('もう一回'),
                   ),
                 ],
@@ -321,6 +333,30 @@ class _ResultCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _RarityStars extends StatelessWidget {
+  const _RarityStars({required this.rarity});
+
+  final int rarity;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(5, (index) {
+        final isFilled = index < rarity;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Icon(
+            isFilled ? Icons.star : Icons.star_border,
+            color: isFilled ? const Color(0xFFFFD700) : Colors.grey.shade300,
+            size: 22,
+          ),
+        );
+      }),
     );
   }
 }
