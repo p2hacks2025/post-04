@@ -68,7 +68,7 @@ class _TimelinePageState extends State<TimelinePage> {
                                 stream: _repo.streamIsLiked(posts[i].id),
                                 builder: (context, likeSnap) {
                                   final liked = likeSnap.data ?? false;
-                                  return IconButton(
+                                  return TextButton.icon(
                                     onPressed: () => _repo.toggleLike(posts[i].id),
                                     icon: Icon(
                                       liked
@@ -77,11 +77,22 @@ class _TimelinePageState extends State<TimelinePage> {
                                       color: liked
                                           ? Colors.pink
                                           : Colors.black54,
+                                      size: 20,
                                     ),
-                                    tooltip: liked ? 'いいね済み' : 'いいね',
+                                    label: const Text('すてきだね'),
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: Colors.black87,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
                                   );
                                 },
                               ),
+                              const SizedBox(width: 4),
                               Text('${posts[i].likeCount}'),
                               const Spacer(),
                               Text(
