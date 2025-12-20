@@ -7,6 +7,7 @@ class StickerTile extends StatelessWidget {
     required this.assetPath,
     this.size,
     this.showShadow = true,
+    this.showBackground = true,
     this.forceStaticImage = false,
     this.useModelViewer = true,
   });
@@ -14,6 +15,7 @@ class StickerTile extends StatelessWidget {
   final String assetPath;
   final double? size;
   final bool showShadow;
+  final bool showBackground;
   final bool forceStaticImage;
   final bool useModelViewer;
 
@@ -33,9 +35,15 @@ class StickerTile extends StatelessWidget {
     final isGlb = assetPath.toLowerCase().endsWith('.glb');
     final useModelForGlb = isGlb && useModelViewer && !forceStaticImage;
     final glbLike = isGlb;
-    final bgColor = (useModelForGlb || glbLike) ? Colors.transparent : Colors.white;
-    final padding = (useModelForGlb || glbLike) ? EdgeInsets.zero : const EdgeInsets.all(8);
-    final effectiveShadow = (useModelForGlb || glbLike) ? <BoxShadow>[] : boxShadow;
+    final bgColor = (!showBackground || useModelForGlb || glbLike)
+        ? Colors.transparent
+        : Colors.white;
+    final padding = (!showBackground || useModelForGlb || glbLike)
+        ? EdgeInsets.zero
+        : const EdgeInsets.all(8);
+    final effectiveShadow = (!showBackground || useModelForGlb || glbLike)
+        ? <BoxShadow>[]
+        : boxShadow;
 
     final child = _buildContent();
 
@@ -73,7 +81,10 @@ class StickerTile extends StatelessWidget {
     }
     if (isGlb || forceStaticImage) {
       final iconSize = childSize == double.infinity ? 48.0 : childSize * 0.6;
-      final previewPath = assetPath.replaceAll(RegExp(r'\.glb$', caseSensitive: false), '.png');
+      final previewPath = assetPath.replaceAll(
+        RegExp(r'\.glb$', caseSensitive: false),
+        '.png',
+      );
       return SizedBox(
         width: childSize,
         height: childSize,

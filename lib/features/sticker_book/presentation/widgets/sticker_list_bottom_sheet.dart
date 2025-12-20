@@ -125,7 +125,8 @@ class _StickerGridArea extends StatelessWidget {
   final List<String?> inventorySlots;
   final void Function(String asset, int slotIndex) onTapSticker;
   final void Function(String assetPath) onShowDetail;
-  final void Function(InventoryPayload payload, Offset globalPosition) onDropSticker;
+  final void Function(InventoryPayload payload, Offset globalPosition)
+  onDropSticker;
   final String Function(String assetPath)? displayAssetResolver;
 
   @override
@@ -183,7 +184,8 @@ class _InventoryStickerTile extends StatefulWidget {
   final String? displayAssetPath; // 表示用（サムネイル等）。未指定なら assetPath
   final int slotIndex;
   final VoidCallback? onTap;
-  final void Function(InventoryPayload payload, Offset globalPosition) onDropSticker;
+  final void Function(InventoryPayload payload, Offset globalPosition)
+  onDropSticker;
 
   @override
   State<_InventoryStickerTile> createState() => _InventoryStickerTileState();
@@ -206,7 +208,11 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
     _isDragging = false;
   }
 
-  void _showOverlay(BuildContext context, String assetPath, Offset globalPosition) {
+  void _showOverlay(
+    BuildContext context,
+    String assetPath,
+    Offset globalPosition,
+  ) {
     _overlayPosition = globalPosition;
     _overlayEntry = OverlayEntry(
       builder: (context) {
@@ -220,6 +226,7 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
               assetPath: assetPath,
               size: 60,
               showShadow: false,
+              showBackground: false,
               forceStaticImage: false,
               useModelViewer: isGlb,
             ),
@@ -244,6 +251,7 @@ class _InventoryStickerTileState extends State<_InventoryStickerTile> {
       assetPath: tileAssetPath,
       forceStaticImage: false,
       useModelViewer: isGlb,
+      showBackground: false,
     );
 
     return GestureDetector(
@@ -280,14 +288,6 @@ class _EmptySlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      alignment: Alignment.center,
-      child: const Icon(Icons.add, color: Color(0xFFCBD5E1)),
-    );
+    return const Center(child: Icon(Icons.add, color: Color(0xFFCBD5E1)));
   }
 }

@@ -124,7 +124,7 @@ class _SealDetailOverlayState extends State<SealDetailOverlay>
                     height: 300,
                     margin: const EdgeInsets.symmetric(horizontal: 24),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8F9FA),
+                      color: const Color(0xffffffff),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: ClipRRect(
