@@ -145,7 +145,12 @@ class _GachaPageState extends State<GachaPage> with SingleTickerProviderStateMix
     // かわいい箱の演出（ゆらゆら＋ぷにっと拡縮＋キラキラ）
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ガチャ')),
+      appBar: AppBar(
+        title: const Text(
+          'ガチャ',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
       backgroundColor: AppColors.background,
       body: Center(
         child: Stack(
