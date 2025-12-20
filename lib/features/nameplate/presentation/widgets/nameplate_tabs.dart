@@ -14,12 +14,14 @@ class NameplateTabs extends StatelessWidget {
     required this.nameplateData,
     required this.onTabChanged,
     required this.onDataChanged,
+    required this.previewKey,
   });
 
   final int selectedIndex;
   final NameplateData nameplateData;
   final ValueChanged<int> onTabChanged;
   final ValueChanged<NameplateData> onDataChanged;
+  final GlobalKey previewKey;
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +87,7 @@ class NameplateTabs extends StatelessWidget {
         return NameplateTabDecorations(
           data: nameplateData,
           onDataChanged: onDataChanged,
+          previewKey: previewKey,
         );
       default:
         return const SizedBox.shrink();
