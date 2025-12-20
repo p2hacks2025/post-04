@@ -65,18 +65,11 @@ class _TimelinePageState extends State<TimelinePage> {
             const SizedBox(height: 10),
             SizedBox(height: 160, child: NameplatePreview(data: myNp)),
             const SizedBox(height: 16),
-            const Text('あなたの公開中ページ', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             StreamBuilder(
               stream: _repo.streamByUid(uid),
               builder: (context, snapshot) {
                 final posts = snapshot.data ?? const [];
-                if (posts.isEmpty) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text('公開中の台紙がありません（「わたしの」から公開できます）'),
-                  );
-                }
                 return Column(
                   children: [
                     for (final p in posts) ...[
