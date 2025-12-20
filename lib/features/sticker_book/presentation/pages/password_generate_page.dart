@@ -114,7 +114,12 @@ class _PasswordGeneratePageState extends State<PasswordGeneratePage> {
     final stickers = _ownedStickers;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('あげるシールを選ぶ')),
+      appBar: AppBar(
+        title: const Text(
+          'あげるシールを選ぶ',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
       body: Column(
         children: [
           const Padding(

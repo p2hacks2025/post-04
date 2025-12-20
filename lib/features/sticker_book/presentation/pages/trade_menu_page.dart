@@ -17,7 +17,10 @@ class TradeMenuPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8F0), // 全体の背景色（クリーム色）
       appBar: AppBar(
-        title: const Text('シール交換'),
+        title: const Text(
+          'シール交換',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
         backgroundColor: const Color(0xFFC6845A), // 茶色っぽいオレンジ
         foregroundColor: Colors.white,
       ),
@@ -28,7 +31,7 @@ class TradeMenuPage extends StatelessWidget {
             // 上のボタン：シールをあげる
             _MenuButton(
               icon: Icons.vpn_key, // 鍵アイコン
-              label: 'シールをあげる\n(あいことば発行)',
+              label: 'シールをあげる\n(あいことばを発行)',
               color: Colors.orange,
               onTap: () {
                 Navigator.push(
@@ -40,11 +43,11 @@ class TradeMenuPage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 40),
-            
+
             // 下のボタン：シールをもらう
             _MenuButton(
               icon: Icons.keyboard, // 入力アイコン
-              label: 'シールをもらう\n(あいことば入力)',
+              label: 'シールをもらう\n(あいことばを入力)',
               color: Colors.blueAccent,
               onTap: () {
                 Navigator.push(
@@ -100,7 +103,7 @@ class _MenuButton extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           // withValuesに変更して警告を回避
-          color: color.withValues(alpha: 0.1), 
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: color, width: 2),
         ),

@@ -44,7 +44,7 @@ class SettingsPage extends StatelessWidget {
                 'つくる',
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ),

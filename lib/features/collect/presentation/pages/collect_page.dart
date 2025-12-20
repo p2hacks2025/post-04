@@ -12,7 +12,10 @@ class CollectPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('あつめる'),
+        title: const Text(
+          'シールをあつめる',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -88,7 +91,7 @@ class _MenuCardButton extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w900,
                 color: color,
               ),
             ),
