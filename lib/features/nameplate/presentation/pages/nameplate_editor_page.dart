@@ -233,6 +233,7 @@ class _NameplateEditorPageState extends State<NameplateEditorPage> {
                             });
                           },
                           onDataChanged: _updateNameplate,
+                          previewKey: _previewKey,
                         ),
                       ),
                     ],
