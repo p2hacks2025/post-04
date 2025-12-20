@@ -22,7 +22,8 @@ class StickerBookPage extends StatefulWidget {
   State<StickerBookPage> createState() => _StickerBookPageState();
 }
 
-class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingObserver {
+class _StickerBookPageState extends State<StickerBookPage>
+    with WidgetsBindingObserver {
   final List<String> _categories = const ['すべて', 'マーク', 'はこだて', 'ほか'];
   int _selectedCategoryIndex = 0;
 
@@ -50,7 +51,7 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   Set<int> _publishedPages = <int>{};
   int _currentPage = 0;
 
-  static const int _inventorySize = 20;
+  late final int _inventorySize = _catalog.length;
   static const int _pageCount = 4;
 
   final List<List<Color>> _boardGradients = AppColors.stickerBookGradients;
@@ -65,7 +66,10 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   }
 
   void _onPageChanged() {
-    final p = (_pageController.page ?? 0).round().clamp(0, _boardKeys.length - 1);
+    final p = (_pageController.page ?? 0).round().clamp(
+      0,
+      _boardKeys.length - 1,
+    );
     if (p != _currentPage && mounted) {
       setState(() => _currentPage = p);
     }
@@ -84,7 +88,8 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       _saveData();
     } else if (state == AppLifecycleState.resumed) {
       _reloadCounts();
@@ -108,15 +113,11 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   @override
   Widget build(BuildContext context) {
     _initializePageCollections();
-    
+
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    
+
     final published = _publishedPages.contains(_currentPage);
 
     return Stack(
@@ -154,6 +155,9 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
           onCategorySelected: (index) {
             setState(() => _selectedCategoryIndex = index);
           },
+          masterAssets: _catalog
+              .map((e) => e.assetPath)
+              .toList(growable: false),
           inventorySlots: _inventorySlots,
           onTapSticker: _handleStickerTap,
           onDropSticker: _handleDropFromList,
@@ -169,7 +173,9 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
               icon: Icon(published ? Icons.public : Icons.lock),
               label: Text(published ? '公開中' : '公開'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: published ? Colors.green : const Color(0xFFC6845A),
+                backgroundColor: published
+                    ? Colors.green
+                    : const Color(0xFFC6845A),
                 foregroundColor: Colors.white,
                 shape: const StadiumBorder(),
               ),
@@ -190,7 +196,10 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     });
   }
 
-  Future<void> _handleDropFromList(InventoryPayload payload, Offset globalPosition) async {
+  Future<void> _handleDropFromList(
+    InventoryPayload payload,
+    Offset globalPosition,
+  ) async {
     final page = (_pageController.page ?? 0).round().clamp(
       0,
       _boardKeys.length - 1,
@@ -327,8 +336,14 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       _placedByPage = data.placedByPage
           .map((page) => List<PlacedSticker>.from(page))
           .toList();
+      _inventorySlots = List<String?>.from(data.inventorySlots);
     } else {
       _placedByPage = List.generate(_pageCount, (_) => <PlacedSticker>[]);
+      _inventorySlots = List<String?>.filled(
+        _inventorySize,
+        null,
+        growable: false,
+      );
     }
     //初期値リセット（開発用なので、後で消す）
     _countStore.resetAllTo(1);
@@ -410,8 +425,9 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
     final renderBox = key.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('公開に失敗しました（台紙サイズ取得不可）')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('公開に失敗しました（台紙サイズ取得不可）')));
       }
       return;
     }
@@ -439,18 +455,28 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
       stickers: stickers,
     );
 
-    await _publicRepo.publishPage(page: page, nameplate: nameplate, board: snapshot);
+    await _publicRepo.publishPage(
+      page: page,
+      nameplate: nameplate,
+      board: snapshot,
+    );
 
     if (!mounted) return;
     setState(() => _publishedPages = {..._publishedPages, page});
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('公開しました')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('公開しました')));
   }
 
   Future<void> _unpublish(int page) async {
     await _publicRepo.unpublishPage(page: page);
     if (!mounted) return;
-    setState(() => _publishedPages = _publishedPages.where((p) => p != page).toSet());
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('非公開にしました（DBから削除）')));
+    setState(
+      () => _publishedPages = _publishedPages.where((p) => p != page).toSet(),
+    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('非公開にしました（DBから削除）')));
   }
 
   Future<void> _syncIfPublished(int page) async {
@@ -460,9 +486,19 @@ class _StickerBookPageState extends State<StickerBookPage> with WidgetsBindingOb
   }
 
   void _rebuildInventoryFromCounts() {
-    _inventorySlots = _catalog
-        .map((s) => (_counts[s.assetPath] ?? 0) > 0 ? s.assetPath : null)
-        .toList(growable: false);
+    // マスターデータの順番＝スロットの順番として固定する。
+    // 所持数が 0 のものは null（空欄）にすることで、消費しても後ろが詰まらない。
+    final slots = List<String?>.filled(_inventorySize, null, growable: false);
+    final limit = _inventorySize < _catalog.length
+        ? _inventorySize
+        : _catalog.length;
+    for (var i = 0; i < limit; i++) {
+      final asset = _catalog[i].assetPath;
+      if ((_counts[asset] ?? 0) > 0) {
+        slots[i] = asset;
+      }
+    }
+    _inventorySlots = slots;
   }
 
   /// データを保存する
