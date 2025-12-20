@@ -80,14 +80,26 @@ class StickerBookStorage {
       final data = StickerBookData.fromJson(json);
 
       // データの整合性をチェック
-      if (data.inventorySlots.length != defaultInventorySize ||
-          data.placedByPage.length != defaultPageCount) {
-        debugPrint('データのサイズが一致しません。初期データを返します。');
+      if (data.placedByPage.length != defaultPageCount) {
+        debugPrint('データのページ数が一致しません。初期データを返します。');
         return null;
       }
 
+      // inventorySlots は、マスター追加などでサイズが変わりうるので調整して読み込む
+      var slots = List<String?>.from(data.inventorySlots);
+      if (slots.length > defaultInventorySize) {
+        slots = slots.sublist(0, defaultInventorySize);
+      } else if (slots.length < defaultInventorySize) {
+        slots.addAll(
+          List<String?>.filled(defaultInventorySize - slots.length, null),
+        );
+      }
+
       debugPrint('シール帳データを読み込みました');
-      return data;
+      return StickerBookData(
+        inventorySlots: slots,
+        placedByPage: data.placedByPage,
+      );
     } catch (e) {
       debugPrint('データ読み込みエラー: $e');
       return null;

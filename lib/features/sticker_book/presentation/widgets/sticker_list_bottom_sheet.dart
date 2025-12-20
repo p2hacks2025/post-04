@@ -13,6 +13,7 @@ class StickerListBottomSheet extends StatelessWidget {
     required this.categories,
     required this.selectedIndex,
     required this.onCategorySelected,
+    required this.masterAssets,
     required this.inventorySlots,
     required this.onTapSticker,
     required this.onDropSticker,
@@ -22,6 +23,7 @@ class StickerListBottomSheet extends StatelessWidget {
   final List<String> categories;
   final int selectedIndex;
   final ValueChanged<int> onCategorySelected;
+  final List<String> masterAssets; // マスター順（null判定用）
   final List<String?> inventorySlots;
   final void Function(String asset, int slotIndex) onTapSticker;
   final void Function(InventoryPayload payload, Offset globalPosition)
@@ -52,6 +54,7 @@ class StickerListBottomSheet extends StatelessWidget {
               Expanded(
                 child: _StickerGridArea(
                   scrollController: scrollController,
+                  masterAssets: masterAssets,
                   inventorySlots: inventorySlots,
                   selectedCategoryIndex: selectedIndex,
                   onTapSticker: onTapSticker,
@@ -116,6 +119,7 @@ class _StickerTabs extends StatelessWidget {
 class _StickerGridArea extends StatelessWidget {
   const _StickerGridArea({
     required this.scrollController,
+    required this.masterAssets,
     required this.inventorySlots,
     required this.selectedCategoryIndex,
     required this.onTapSticker,
@@ -125,6 +129,7 @@ class _StickerGridArea extends StatelessWidget {
   });
 
   final ScrollController scrollController;
+  final List<String> masterAssets;
   final List<String?> inventorySlots;
   final int selectedCategoryIndex;
   final void Function(String asset, int slotIndex) onTapSticker;
@@ -169,6 +174,21 @@ class _StickerGridArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 「すべて」以外は、そのカテゴリに属するマスターのインデックスだけ描画する。
+    final indices = <int>[];
+    if (selectedCategoryIndex == 0) {
+      for (var i = 0; i < masterAssets.length; i++) {
+        indices.add(i);
+      }
+    } else {
+      for (var i = 0; i < masterAssets.length; i++) {
+        final asset = masterAssets[i];
+        if (_matchesCategory(asset, selectedCategoryIndex)) {
+          indices.add(i);
+        }
+      }
+    }
+
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: [
@@ -187,15 +207,12 @@ class _StickerGridArea extends StatelessWidget {
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
           ),
-          // nullも含めてスロット数ぶん描画し、消費後に後ろが詰まらないようにする
-          itemCount: inventorySlots.length,
+          // カテゴリに属する分だけ描画（他カテゴリはブロック自体を出さない）
+          itemCount: indices.length,
           itemBuilder: (context, index) {
-            final rawAsset = inventorySlots[index];
-            final asset =
-                (rawAsset != null &&
-                    (selectedCategoryIndex == 0 ||
-                        _matchesCategory(rawAsset, selectedCategoryIndex)))
-                ? rawAsset
+            final masterIndex = indices[index];
+            final asset = masterIndex < inventorySlots.length
+                ? inventorySlots[masterIndex]
                 : null;
             final displayAsset = (asset != null && displayAssetResolver != null)
                 ? displayAssetResolver!(asset)
@@ -203,7 +220,7 @@ class _StickerGridArea extends StatelessWidget {
             return _InventoryStickerTile(
               assetPath: asset,
               displayAssetPath: displayAsset,
-              slotIndex: index,
+              slotIndex: masterIndex,
               onTap: asset != null ? () => onShowDetail(asset) : null,
               onDropSticker: onDropSticker,
             );

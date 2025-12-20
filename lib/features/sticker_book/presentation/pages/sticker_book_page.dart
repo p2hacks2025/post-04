@@ -51,7 +51,7 @@ class _StickerBookPageState extends State<StickerBookPage>
   Set<int> _publishedPages = <int>{};
   int _currentPage = 0;
 
-  static const int _inventorySize = 20;
+  late final int _inventorySize = _catalog.length;
   static const int _pageCount = 4;
 
   final List<List<Color>> _boardGradients = AppColors.stickerBookGradients;
@@ -155,6 +155,9 @@ class _StickerBookPageState extends State<StickerBookPage>
           onCategorySelected: (index) {
             setState(() => _selectedCategoryIndex = index);
           },
+          masterAssets: _catalog
+              .map((e) => e.assetPath)
+              .toList(growable: false),
           inventorySlots: _inventorySlots,
           onTapSticker: _handleStickerTap,
           onDropSticker: _handleDropFromList,
